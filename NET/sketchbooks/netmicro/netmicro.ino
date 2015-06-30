@@ -40,27 +40,47 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
  * General Configuration
  */
 
-#define IDLE_TIMEOUT_MS  3000
-#define WEBSITE      "www.adafruit.com"
-#define WEBPAGE      "/testwifi/index.html"
+#define IDLE_TIMEOUT_MS 3000
+#define WEBSITE "www.adafruit.com"
+#define WEBPAGE "/testwifi/index.html"
 
 
 /**
- * Declarations
+ * Arduino
  */
-uint32_t ip;
-
 
 void setup(void) {
+  initializeSerial();
+  initializeWiFi();
+  connectToWiFi();
+  displayConnectionDetails();
+  foo();
+  disconnectFromWiFi();
+}
+
+void loop(void) {
+ delay(10);
+}
+
+void initializeSerial(void) {
   Serial.begin(115200);
   Serial.println(F("Hello, CC3000!\n"));
+}
 
-  Serial.println(F("\nInitializing..."));
+
+/**
+ * CC3000 WiFi
+ */
+
+void initializeWiFi(void) {
+ Serial.println(F("\nInitializing WiFi module..."));
   if (!cc3000.begin()) {
     Serial.println(F("Couldn't begin()! Check your wiring?"));
     while(1);
-  }
-  
+  } 
+}
+
+void connectToWiFi(void) {
   Serial.print(F("\nAttempting to connect to "));
   Serial.println(WLAN_SSID);
   if (!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
@@ -73,10 +93,38 @@ void setup(void) {
   Serial.println(F("Request DHCP"));
   while (!cc3000.checkDHCP()) {
     delay(100); // TODO: Insert a DHCP timeout!
-  }  
+  }
+}
 
-  displayConnectionDetails();
+void disconnectFromWiFi(void) {
+  Serial.println(F("\n\nDisconnecting"));
+  cc3000.disconnect();
+}
 
+void displayConnectionDetails(void) {
+  uint32_t ipAddress, netmask, gateway, dhcpserv, dnsserv;
+  
+  if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv)) {
+    Serial.println(F("Unable to retrieve the IP Address!\r\n"));
+    while(1);
+  } else {
+    Serial.print(F("\nIP Addr: ")); cc3000.printIPdotsRev(ipAddress);
+    Serial.print(F("\nNetmask: ")); cc3000.printIPdotsRev(netmask);
+    Serial.print(F("\nGateway: ")); cc3000.printIPdotsRev(gateway);
+    Serial.print(F("\nDHCPsrv: ")); cc3000.printIPdotsRev(dhcpserv);
+    Serial.print(F("\nDNSserv: ")); cc3000.printIPdotsRev(dnsserv);
+    Serial.println();
+  }
+}
+
+
+/**
+ * Domain
+ */
+
+void foo(void) {
+  uint32_t ip;
+  
   // Try looking up the website's IP address
   ip = 0;
   Serial.print(WEBSITE); Serial.print(F(" -> "));
@@ -117,27 +165,4 @@ void setup(void) {
   }
   www.close();
   Serial.println(F("-------------------------------------"));
-  
-  Serial.println(F("\n\nDisconnecting"));
-  cc3000.disconnect();
-}
-
-void loop(void) {
- delay(10);
-}
-
-void displayConnectionDetails(void) {
-  uint32_t ipAddress, netmask, gateway, dhcpserv, dnsserv;
-  
-  if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv)) {
-    Serial.println(F("Unable to retrieve the IP Address!\r\n"));
-    while(1);
-  } else {
-    Serial.print(F("\nIP Addr: ")); cc3000.printIPdotsRev(ipAddress);
-    Serial.print(F("\nNetmask: ")); cc3000.printIPdotsRev(netmask);
-    Serial.print(F("\nGateway: ")); cc3000.printIPdotsRev(gateway);
-    Serial.print(F("\nDHCPsrv: ")); cc3000.printIPdotsRev(dhcpserv);
-    Serial.print(F("\nDNSserv: ")); cc3000.printIPdotsRev(dnsserv);
-    Serial.println();
-  }
 }
