@@ -4,17 +4,17 @@
 
 void setup(void) {
   initializeSerial();
-  initializeWiFi();
-  connectToWiFi();
-  displayConnectionDetails();
-  foo();
-  disconnectFromWiFi();
+  initializeI2C();
+  //initializeWiFi();
+  //connectToWiFi();
+  //displayConnectionDetails();
+  //foo();
+  //disconnectFromWiFi();
 }
 
 void loop(void) {
  delay(10);
 }
-
 
 void initializeSerial(void) {
   Serial.begin(115200);

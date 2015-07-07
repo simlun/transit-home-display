@@ -29,3 +29,9 @@ STATUS     0x02       R     STARTING, OFFLINE, ONLINE,
 URL        0x03       W
 DATA       0x04       R
 ```
+
+```
+Label     Data
+--------------
+PONG      0x50
+```
