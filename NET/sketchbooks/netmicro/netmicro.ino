@@ -40,6 +40,7 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
  * General Configuration
  */
 
+#define DHCP_TIMEOUT_MS 20000
 #define IDLE_TIMEOUT_MS 3000
 #define WEBSITE "www.adafruit.com"
 #define WEBPAGE "/testwifi/index.html"
@@ -64,7 +65,7 @@ void loop(void) {
 
 void initializeSerial(void) {
   Serial.begin(115200);
-  Serial.println(F("Hello, CC3000!\n"));
+  Serial.println(F("Hello, CC3000!"));
 }
 
 
@@ -77,7 +78,7 @@ void initializeWiFi(void) {
   if (!cc3000.begin()) {
     Serial.println(F("Couldn't begin()! Check your wiring?"));
     while(1);
-  } 
+  }
 }
 
 void connectToWiFi(void) {
@@ -87,13 +88,21 @@ void connectToWiFi(void) {
     Serial.println(F("Failed!"));
     while(1);
   } else {
-    Serial.println(F("Connected!"));
+    Serial.println(F("Connected"));
   }
    
-  Serial.println(F("Request DHCP"));
+  Serial.print(F("Requesting DHCP"));
+  int waited_ms = 0;
   while (!cc3000.checkDHCP()) {
-    delay(100); // TODO: Insert a DHCP timeout!
+    if (waited_ms >= DHCP_TIMEOUT_MS) {
+      Serial.println(F("\nTimeout!"));
+      while(1);
+    }
+    delay(1000);
+    waited_ms += 1000;
+    Serial.print(F("."));
   }
+  Serial.println(F("\nGot IP"));
 }
 
 void disconnectFromWiFi(void) {
