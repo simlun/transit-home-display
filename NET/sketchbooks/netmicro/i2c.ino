@@ -2,20 +2,20 @@
 
 void initializeI2CSlave(int myAddress) {
   Serial.println(F("\nInitializing I2C slave"));
-  Wire.onReceive(onReceiveEvent);
-  Wire.onRequest(onRequestEvent);
+  Wire.onReceive(_onReceiveEvent);
+  Wire.onRequest(_onRequestEvent);
   Wire.begin(myAddress);
 }
 
-void onReceiveEvent(int numBytesReadFromMaster) {
-  byte firstByte = readSingleByte();
+void _onReceiveEvent(int numBytesReadFromMaster) {
+  byte firstByte = _readSingleByte();
   if (registerPointer == NULL) {
     registerPointer = firstByte;
   }
-  readAndThrowAwayRest();
+  _readAndThrowAwayRest();
 }
 
-void onRequestEvent() {
+void _onRequestEvent() {
   if (registerPointer == PING) {
     Wire.write(PONG);
   } else if (registerPointer == STATUS) {
@@ -26,7 +26,7 @@ void onRequestEvent() {
   registerPointer = NULL;
 }
 
-byte readSingleByte() {
+byte _readSingleByte() {
   if (Wire.available()) {
     return Wire.read();
   } else {
@@ -34,7 +34,7 @@ byte readSingleByte() {
   }
 }
 
-void readAndThrowAwayRest() {
+void _readAndThrowAwayRest() {
   while (Wire.available()) {
     Wire.read();
   }

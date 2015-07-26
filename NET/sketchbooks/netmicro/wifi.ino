@@ -52,11 +52,12 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
  */
 
 void initializeWiFi(void) {
- Serial.println(F("\nInitializing WiFi module..."));
+  Serial.println(F("\nInitializing WiFi module..."));
   if (!cc3000.begin()) {
     Serial.println(F("Couldn't begin()! Check your wiring?"));
     while(1);
   }
+  Serial.println(F("\nInitialized"));
 }
 
 void connectToWiFi(void) {
@@ -84,8 +85,9 @@ void connectToWiFi(void) {
 }
 
 void disconnectFromWiFi(void) {
-  Serial.println(F("\n\nDisconnecting"));
+  Serial.println(F("\nDisconnecting"));
   cc3000.disconnect();
+  Serial.println(F("Disconnected"));
 }
 
 void displayConnectionDetails(void) {
@@ -131,7 +133,9 @@ void foo(void) {
     www.fastrprint(F("GET "));
     www.fastrprint(WEBPAGE);
     www.fastrprint(F(" HTTP/1.1\r\n"));
+    www.fastrprint(F("User-Agent: curl/7.38.0\r\n"));
     www.fastrprint(F("Host: ")); www.fastrprint(WEBSITE); www.fastrprint(F("\r\n"));
+    www.fastrprint(F("Accept: */*\r\n"));
     www.fastrprint(F("\r\n"));
     www.println();
   } else {
