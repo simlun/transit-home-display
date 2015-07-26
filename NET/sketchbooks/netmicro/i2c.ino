@@ -18,6 +18,8 @@ void onReceiveEvent(int numBytesReadFromMaster) {
 void onRequestEvent() {
   if (registerPointer == PING) {
     Wire.write(PONG);
+  } else if (registerPointer == STATUS) {
+    Wire.write(wifiStatus);
   } else {
     Wire.write(NULL);
   }

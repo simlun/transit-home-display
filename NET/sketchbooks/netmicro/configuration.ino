@@ -1,0 +1,1 @@
+#define MY_I2C_ADDRESS 0x07

@@ -34,4 +34,11 @@ DATA       0x04       R
 Label     Data
 --------------
 PONG      0x50
+STARTING  0x60
+OFFLINE   0x61
+ONLINE    0x62
+LOADING   0x63
+LOADED    0x64
+FAILED    0x65
+DEAD      0x66
 ```
