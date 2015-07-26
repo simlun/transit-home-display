@@ -29,6 +29,8 @@ http://www.embedded.com/design/connectivity/4025661/Inter-IC-I2C-bus-design-and-
 Usage
 -----
 
+(Current development status: 1-2 are implemented)
+
 1. Read from the `PING` registry and get a `PONG` response to see that the
    device is fundamentally working.
 2. Wait for the device to be in the `OFFLINE` state by reading the `STATUS`

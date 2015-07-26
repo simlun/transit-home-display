@@ -23,9 +23,9 @@ void setup(void) {
   initializeWiFi();
   wifiStatus = OFFLINE;
   
-  connectToWiFi();
-  wifiStatus = ONLINE;
-  displayConnectionDetails();
+  //connectToWiFi();
+  //wifiStatus = ONLINE;
+  //displayConnectionDetails();
   
   //foo();
   //disconnectFromWiFi();
