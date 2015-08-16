@@ -11,6 +11,9 @@ void _onReceiveEvent(int numBytesReadFromMaster) {
   byte firstByte = _readSingleByte();
   if (registerPointer == NULL) {
     registerPointer = firstByte;
+  } else if (registerPointer == CONNECT) {
+    connectState = firstByte;
+    registerPointer = NULL;
   }
   _readAndThrowAwayRest();
 }

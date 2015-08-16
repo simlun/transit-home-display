@@ -29,7 +29,7 @@ http://www.embedded.com/design/connectivity/4025661/Inter-IC-I2C-bus-design-and-
 Usage
 -----
 
-(Current development status: 1-2 are implemented)
+(Current development status: 1-2 and 4-5 are implemented)
 
 1. Read from the `PING` registry and get a `PONG` response to see that the
    device is fundamentally working.
@@ -54,24 +54,24 @@ Registers and Labels
 --------------------
 
 ```
-Register   Register   R/W   Data
-Name       Address
+Register   Register   R/W   EEPROM   Data
+Name       Address          Address
 -----------------------------------------------------------
-PING       0x01       R     PONG
-STATUS     0x02       R     STARTING,
-                            OFFLINE, ONLINE,
-                            CONNECTING, DISCONNECTING,
-                            BUSY,
-                            FAILED, DEAD
+PING       0x01       R              PONG
+STATUS     0x02       R              STARTING,
+                                     OFFLINE, ONLINE,
+                                     CONNECTING, DISCONNECTING,
+                                     BUSY,
+                                     FAILED, DEAD
 
-SSID       0x03       W     [32 ASCII characters]
-PASSPHRASE 0x04       W     [32 ASCII characters]
-CONNECT    0x05       W     {WPA2, DISCONNECT}
+SSID       0x03       W     0x00     [32 ASCII characters]
+PASSPHRASE 0x04       W     0x20     [32 ASCII characters]
+CONNECT    0x05       W              {WPA2, DISCONNECT}
 
-HOST       0x06       W     [32 ASCII characters]
-PATH       0x07       W     [32 ASCII characters]
-DO         0x08       W     {GET}
-RESPONSE   0x09       R     [256 bytes]
+HOST       0x06       W     0x40     [32 ASCII characters]
+PATH       0x07       W     0x60     [32 ASCII characters]
+DO         0x08       W              {GET}
+RESPONSE   0x09       R              [256 bytes]
 ```
 
 ```
