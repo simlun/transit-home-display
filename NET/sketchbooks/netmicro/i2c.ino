@@ -17,7 +17,7 @@ void _onReceiveEvent(int numBytesReadFromMaster) {
   } else if (registerPointer == HOST) {
     // TODO https://www.arduino.cc/en/Reference/EEPROMPut
     // Read up to 32 bytes and store at EEPROM address 0x40
-    _readBytesAndStoreAtEEPROMAddress(32, 0x40);
+    //_readBytesAndStoreAtEEPROMAddress(32, 0x40);
     registerPointer = NULL;
   }
   _readAndThrowAwayRest();

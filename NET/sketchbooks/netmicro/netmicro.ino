@@ -12,6 +12,7 @@ byte registerPointer = NULL;
 byte wifiStatus = STARTING;
 byte connectState = NULL;
 
+
 /**
  * Arduino
  */
@@ -20,7 +21,7 @@ void setup(void) {
   initializeSerial();
   initializeI2CSlave(MY_I2C_ADDRESS);
 
-  initializeWiFi();
+  //initializeWiFi();
   wifiStatus = OFFLINE;
   
   printFreeMemory();
@@ -29,8 +30,8 @@ void setup(void) {
 void loop(void) {
   if (connectState == WPA2) {
     wifiStatus = CONNECTING;
-    connectToWiFi();
-    displayConnectionDetails();
+    //connectToWiFi();
+    //displayConnectionDetails();
     wifiStatus = ONLINE;
     connectState = NULL;
   }

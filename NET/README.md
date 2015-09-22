@@ -5,7 +5,7 @@ Bill Of Materials
 -----------------
 
 * Arduino
-* Adafruit CC3000 WiFi Module
+* ESP8266 WiFi Module
 
 
 I2C Protocol
