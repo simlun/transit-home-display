@@ -1,0 +1,3 @@
+[submodule "NET/sketchbooks/libraries/StandardCplusplus"]
+	path = NET/sketchbooks/libraries/StandardCplusplus
+	url = https://github.com/maniacbug/StandardCplusplus.git
