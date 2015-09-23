@@ -1,7 +1,11 @@
 #include "MemoryFree.h"
+
 #include "configuration.h"
 #include "constants.h"
+
 #include "I2C.h"
+#include "Protocol.h"
+
 #include <Wire.h>
 
 
@@ -10,6 +14,21 @@
  */
 
 I2C i2c(MY_I2C_ADDRESS);
+
+
+/**
+ * My Event Handlers
+ */
+
+PingHandler pingHandler;
+StatusHandler statusHandler;
+ConnectHandler connectHandler;
+
+void registerProtocolHandlers() {
+  i2c.registerRequestEventHandler(&pingHandler);
+  i2c.registerRequestEventHandler(&statusHandler);
+  i2c.registerReceiveEventHandler(&connectHandler);
+}
 
 
 /**
@@ -25,6 +44,7 @@ void _onRequestEvent() {
 }
 
 void registerI2CEventHandlers() {
+  // TODO Move this to I2C class somehow?
   Wire.onReceive(_onReceiveEvent);
   Wire.onRequest(_onRequestEvent);
 }
@@ -42,6 +62,8 @@ void initializeSerial(void) {
 void setup(void) {
   initializeSerial();
 
+  registerProtocolHandlers();
+
   registerI2CEventHandlers();
   i2c.initialize();
 
@@ -49,19 +71,6 @@ void setup(void) {
 }
 
 void loop(void) {
-  //if (connectState == WPA2) {
-    //wifiStatus = CONNECTING;
-    //connectToWiFi();
-    //displayConnectionDetails();
-    //wifiStatus = ONLINE;
-    //connectState = NULL;
-  //}
-  
-  //foo();
-
-  //disconnectFromWiFi();
-  //wifiStatus = OFFLINE;
-  
-  
+  // TODO Implement event loop
   delay(0.1);
 }

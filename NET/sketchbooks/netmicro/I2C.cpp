@@ -5,35 +5,48 @@
 
 I2C::I2C(byte address) : address(address) {}
 
-void I2C::initialize() { 
+void I2C::initialize() {
   Wire.begin(address);
 }
 
+void I2C::registerReceiveEventHandler(ReceiveEventHandler * handler) {
+  receiveEventHandlers[handler->command()] = handler;
+}
+
+void I2C::registerRequestEventHandler(RequestEventHandler * handler) {
+  requestEventHandlers[handler->command()] = handler;
+}
+
 void I2C::onReceiveEvent(int numBytesReadFromMaster) {
-  byte firstByte = readSingleByte();
-  if (registerPointer == NULL) {
-    registerPointer = firstByte;
-  } else if (registerPointer == CONNECT) {
-    connectState = firstByte;
-    registerPointer = NULL;
-  } else if (registerPointer == HOST) {
-    // TODO https://www.arduino.cc/en/Reference/EEPROMPut
-    // Read up to 32 bytes and store at EEPROM address 0x40
-    //_readBytesAndStoreAtEEPROMAddress(32, 0x40);
-    registerPointer = NULL;
+  if (command == NULL) {
+    command = readSingleByte();
+  } else {
+    ReceiveEventHandler *handler = getReceiveEventHandler(command);
+    // TODO Handle null handler case
+    byte numberOfBytesRequested = handler->numberOfBytesRequested();
+    if (numberOfBytesRequested == 1) {
+      handler->handleByte(readSingleByte());
+    } else if (numberOfBytesRequested > 1) {
+      // TODO Read into a buffer and pass to handler->handleBytes(...)
+    }
+    command = NULL;
   }
   readAndThrowAwayRest();
 }
 
 void I2C::onRequestEvent() {
-  if (registerPointer == PING) {
-    Wire.write(PONG);
-  } else if (registerPointer == STATUS) {
-    Wire.write(wifiStatus);
-  } else {
-    Wire.write(NULL);
-  }
-  registerPointer = NULL; 
+  RequestEventHandler *handler = getRequestEventHandler(command);
+  // TODO Handle null handler case
+  Wire.write(handler->requestedByte());
+  command = NULL;
+}
+
+ReceiveEventHandler * I2C::getReceiveEventHandler(byte command) {
+    return receiveEventHandlers[command];
+}
+
+RequestEventHandler * I2C::getRequestEventHandler(byte command) {
+    return requestEventHandlers[command];
 }
 
 byte I2C::readSingleByte() {
