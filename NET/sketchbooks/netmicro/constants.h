@@ -13,7 +13,6 @@
 #define RESPONSE   0x09
 
 
-
 /**
  * Labels
  */
@@ -35,4 +34,3 @@
 #define DELETE        0x6C
 #define FAILED        0xF0
 #define DEAD          0xF1
-

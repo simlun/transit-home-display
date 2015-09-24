@@ -25,9 +25,9 @@ StatusHandler statusHandler;
 ConnectHandler connectHandler;
 
 void registerProtocolHandlers() {
-  i2c.registerRequestEventHandler(&pingHandler);
-  i2c.registerRequestEventHandler(&statusHandler);
-  i2c.registerReceiveEventHandler(&connectHandler);
+    i2c.registerRequestEventHandler(&pingHandler);
+    i2c.registerRequestEventHandler(&statusHandler);
+    i2c.registerReceiveEventHandler(&connectHandler);
 }
 
 
@@ -36,17 +36,17 @@ void registerProtocolHandlers() {
  */
 
 void _onReceiveEvent(int numBytesReadFromMaster) {
-  i2c.onReceiveEvent(numBytesReadFromMaster);
+    i2c.onReceiveEvent(numBytesReadFromMaster);
 }
 
 void _onRequestEvent() {
-  i2c.onRequestEvent();
+    i2c.onRequestEvent();
 }
 
 void registerI2CEventHandlers() {
-  // TODO Move this to I2C class somehow?
-  Wire.onReceive(_onReceiveEvent);
-  Wire.onRequest(_onRequestEvent);
+    // TODO Move this to I2C class somehow?
+    Wire.onReceive(_onReceiveEvent);
+    Wire.onRequest(_onRequestEvent);
 }
 
 
@@ -55,22 +55,22 @@ void registerI2CEventHandlers() {
  */
 
 void initializeSerial(void) {
-  Serial.begin(115200);
-  Serial.println(F("\nInitialized serial communication"));
+    Serial.begin(115200);
+    Serial.println(F("\nInitialized serial communication"));
 }
 
 void setup(void) {
-  initializeSerial();
+    initializeSerial();
 
-  registerProtocolHandlers();
+    registerProtocolHandlers();
 
-  registerI2CEventHandlers();
-  i2c.initialize();
+    registerI2CEventHandlers();
+    i2c.initialize();
 
-  printFreeMemory();
+    printFreeMemory();
 }
 
 void loop(void) {
-  // TODO Implement event loop
-  delay(0.1);
+    // TODO Implement event loop
+    delay(0.1);
 }

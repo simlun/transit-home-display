@@ -7,47 +7,47 @@
 #include <map>
 
 class RequestEventHandler {
-  public:
-    virtual byte command() = 0;
-    virtual byte requestedByte() = 0;
+    public:
+        virtual byte command() = 0;
+        virtual byte requestedByte() = 0;
 };
 
 class ReceiveEventHandler {
-  public:
-    virtual byte command() = 0;
-    virtual byte numberOfBytesRequested() = 0;
-    virtual void handleByte(byte) = 0;
+    public:
+        virtual byte command() = 0;
+        virtual byte numberOfBytesRequested() = 0;
+        virtual void handleByte(byte) = 0;
 };
 
 class I2C {
-  public:
-    I2C(byte);
+    public:
+        I2C(byte);
 
-    void initialize();
+        void initialize();
 
-    void registerReceiveEventHandler(ReceiveEventHandler *);
-    void registerRequestEventHandler(RequestEventHandler *);
+        void registerReceiveEventHandler(ReceiveEventHandler *);
+        void registerRequestEventHandler(RequestEventHandler *);
 
-    void onReceiveEvent(int);
-    void onRequestEvent();
+        void onReceiveEvent(int);
+        void onRequestEvent();
 
-    ReceiveEventHandler * getReceiveEventHandler(byte);
-    RequestEventHandler * getRequestEventHandler(byte);
+        ReceiveEventHandler * getReceiveEventHandler(byte);
+        RequestEventHandler * getRequestEventHandler(byte);
 
-  private:
-    I2C();
-    byte address;
+    private:
+        I2C();
+        byte address;
 
-    std::map<byte, ReceiveEventHandler *> receiveEventHandlers;
-    std::map<byte, RequestEventHandler *> requestEventHandlers;
+        std::map<byte, ReceiveEventHandler *> receiveEventHandlers;
+        std::map<byte, RequestEventHandler *> requestEventHandlers;
 
-    byte command;
+        byte command;
 
-    byte connectState;
-    byte wifiStatus;
+        byte connectState;
+        byte wifiStatus;
 
-    byte readSingleByte();
-    void readAndThrowAwayRest();
+        byte readSingleByte();
+        void readAndThrowAwayRest();
 };
 
 #endif
