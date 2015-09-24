@@ -3,6 +3,10 @@
 
 #include <Wire.h>
 
+/**
+ * I2C
+ */
+
 I2C::I2C(byte address) : address(address) {}
 
 void I2C::initialize() {
@@ -76,3 +80,10 @@ void I2C::readAndThrowAwayRest() {
         Wire.read();
     }
 }
+
+
+/**
+ * ReceiveEventHandler
+ */
+
+ReceiveEventHandler::ReceiveEventHandler(EventBus * eventBus) : eventBus(eventBus) {}

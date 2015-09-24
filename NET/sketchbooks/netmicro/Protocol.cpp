@@ -38,6 +38,8 @@ byte StatusHandler::requestedByte() {
  * Connect
  */
 
+ConnectHandler::ConnectHandler(EventBus * eventBus) : ReceiveEventHandler(eventBus) {}
+
 byte ConnectHandler::command() {
     return CONNECT;
 }
@@ -49,4 +51,7 @@ byte ConnectHandler::numberOfBytesRequested() {
 void ConnectHandler::handleByte(byte b) {
     // TODO set some state of this object to the incoming byte b.
     // b will be WPA2 or DISCONNECT.
+    if (b == WPA2) {
+        eventBus->post(WPA2);
+    }
 }

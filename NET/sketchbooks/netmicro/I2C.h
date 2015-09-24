@@ -6,6 +6,8 @@
 #include <StandardCplusplus.h>
 #include <map>
 
+#include "EventBus.h"
+
 class RequestEventHandler {
     public:
         virtual byte command() = 0;
@@ -13,7 +15,10 @@ class RequestEventHandler {
 };
 
 class ReceiveEventHandler {
+    protected:
+        EventBus * eventBus;
     public:
+        ReceiveEventHandler(EventBus *);
         virtual byte command() = 0;
         virtual byte numberOfBytesRequested() = 0;
         virtual void handleByte(byte) = 0;
