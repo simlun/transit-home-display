@@ -1,6 +1,11 @@
 #include "Protocol.h"
 #include "constants.h"
 
+
+/**
+ * Ping
+ */
+
 byte PingHandler::command() {
     return PING;
 }
@@ -9,6 +14,10 @@ byte PingHandler::requestedByte() {
     return PONG;
 }
 
+
+/**
+ * Status
+ */
 
 byte StatusHandler::command() {
     return STATUS;
@@ -24,6 +33,10 @@ byte StatusHandler::requestedByte() {
     return STARTING;
 }
 
+
+/**
+ * Connect
+ */
 
 byte ConnectHandler::command() {
     return CONNECT;
