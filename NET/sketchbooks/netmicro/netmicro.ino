@@ -1,3 +1,4 @@
+#include <StandardCplusplus.h>
 #include "MemoryFree.h"
 
 #include "configuration.h"
