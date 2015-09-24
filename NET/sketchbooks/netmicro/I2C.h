@@ -30,6 +30,7 @@ class I2C {
 
         void onReceiveEvent(int);
         void onRequestEvent();
+        void handleReceiveCommand();
 
         ReceiveEventHandler * getReceiveEventHandler(byte);
         RequestEventHandler * getRequestEventHandler(byte);
