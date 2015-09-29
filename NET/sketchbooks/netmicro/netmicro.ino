@@ -7,6 +7,9 @@
 #include "I2C.h"
 #include "Protocol.h"
 
+#include "EventBus.h"
+#include "EventBusHandlers.h"
+
 #include <Wire.h>
 
 
@@ -14,16 +17,28 @@
  * Global Instances
  */
 
+EventBus eventBus;
 I2C i2c(MY_I2C_ADDRESS);
 
 
 /**
- * My Event Handlers
+ * My EventBus Handlers
+ */
+
+WPA2ConnectHandler wpa2ConnectHandler(&eventBus);
+
+void registerEventBusHandlers() {
+    eventBus.registerHandler(&wpa2ConnectHandler);
+}
+
+
+/**
+ * My I2C Event Handlers
  */
 
 PingHandler pingHandler;
 StatusHandler statusHandler;
-ConnectHandler connectHandler;
+ConnectHandler connectHandler(&eventBus);
 
 void registerProtocolHandlers() {
     i2c.registerRequestEventHandler(&pingHandler);
@@ -63,6 +78,8 @@ void initializeSerial(void) {
 void setup(void) {
     initializeSerial();
 
+    registerEventBusHandlers();
+
     registerProtocolHandlers();
 
     registerI2CEventHandlers();
@@ -72,6 +89,6 @@ void setup(void) {
 }
 
 void loop(void) {
-    // TODO Implement event loop
+    eventBus.process();
     delay(0.1);
 }

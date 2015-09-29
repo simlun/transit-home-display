@@ -6,6 +6,8 @@
 #include <StandardCplusplus.h>
 #include <map>
 
+#include "EventBus.h"
+
 class RequestEventHandler {
     public:
         virtual byte command() = 0;
@@ -13,7 +15,10 @@ class RequestEventHandler {
 };
 
 class ReceiveEventHandler {
+    protected:
+        EventBus * eventBus;
     public:
+        ReceiveEventHandler(EventBus *);
         virtual byte command() = 0;
         virtual byte numberOfBytesRequested() = 0;
         virtual void handleByte(byte) = 0;
@@ -43,9 +48,6 @@ class I2C {
         std::map<byte, RequestEventHandler *> requestEventHandlers;
 
         byte command;
-
-        byte connectState;
-        byte wifiStatus;
 
         byte readSingleByte();
         void readAndThrowAwayRest();

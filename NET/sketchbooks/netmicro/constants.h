@@ -1,3 +1,7 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+
 /**
  * Register Names
  */
@@ -34,3 +38,5 @@
 #define DELETE        0x6C
 #define FAILED        0xF0
 #define DEAD          0xF1
+
+#endif
