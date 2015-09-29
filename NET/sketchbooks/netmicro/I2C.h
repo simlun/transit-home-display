@@ -49,9 +49,6 @@ class I2C {
 
         byte command;
 
-        byte connectState;
-        byte wifiStatus;
-
         byte readSingleByte();
         void readAndThrowAwayRest();
 };
