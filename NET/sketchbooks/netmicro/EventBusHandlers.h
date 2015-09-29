@@ -4,10 +4,13 @@
 #include <Arduino.h>
 #include "EventBus.h"
 #include "constants.h"
+#include "WiFi.h"
 
 class WPA2ConnectHandler : public EventHandler {
+    private:
+        WiFi * wifi;
     public:
-        WPA2ConnectHandler(EventBus *);
+        WPA2ConnectHandler(EventBus *, WiFi *);
         Event event();
         void handle();
 };

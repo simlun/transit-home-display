@@ -1,6 +1,7 @@
 #include "Protocol.h"
 #include "constants.h"
 
+// TODO Rename to I2CProtocol.{h, cpp}
 
 /**
  * Ping
@@ -19,18 +20,25 @@ byte PingHandler::requestedByte() {
  * Status
  */
 
+StatusHandler::StatusHandler() {
+    status = STARTING;
+}
+
 byte StatusHandler::command() {
     return STATUS;
 }
 
 byte StatusHandler::requestedByte() {
-    // TODO Not hard coded:
-    // STARTING,
+    return status;
+}
+
+void StatusHandler::setStatus(byte s) {
+    // Expected s input values:
     // OFFLINE, ONLINE,
     // CONNECTING, DISCONNECTING,
     // BUSY,
     // FAILED, DEAD
-    return STARTING;
+    status = s;
 }
 
 

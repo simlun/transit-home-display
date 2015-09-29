@@ -12,9 +12,14 @@ class PingHandler : public RequestEventHandler {
 };
 
 class StatusHandler : public RequestEventHandler {
+    private:
+        byte status;
     public:
+        StatusHandler();
         byte command();
         byte requestedByte();
+
+        void setStatus(byte);
 };
 
 class ConnectHandler : public ReceiveEventHandler {

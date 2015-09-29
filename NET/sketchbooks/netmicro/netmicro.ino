@@ -10,35 +10,36 @@
 #include "EventBus.h"
 #include "EventBusHandlers.h"
 
+#include "WiFi.h"
+#include "AdafruitESP8266.h"
+
 #include <Wire.h>
 
 
 /**
- * Global Instances
+ * Global Shared Instances
  */
 
 EventBus eventBus;
 I2C i2c(MY_I2C_ADDRESS);
 
+PingHandler pingHandler;
+StatusHandler statusHandler;
+ConnectHandler connectHandler(&eventBus);
+
+AdafruitESP8266 wifiDevice;
+WiFi wifi(&statusHandler, &wifiDevice);
+
+WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
+
 
 /**
- * My EventBus Handlers
+ * Register Event Handlers
  */
-
-WPA2ConnectHandler wpa2ConnectHandler(&eventBus);
 
 void registerEventBusHandlers() {
     eventBus.registerHandler(&wpa2ConnectHandler);
 }
-
-
-/**
- * My I2C Event Handlers
- */
-
-PingHandler pingHandler;
-StatusHandler statusHandler;
-ConnectHandler connectHandler(&eventBus);
 
 void registerProtocolHandlers() {
     i2c.registerRequestEventHandler(&pingHandler);
@@ -86,6 +87,8 @@ void setup(void) {
     i2c.initialize();
 
     printFreeMemory();
+
+    statusHandler.setStatus(OFFLINE);
 }
 
 void loop(void) {
