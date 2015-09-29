@@ -10,14 +10,17 @@
 I2C::I2C(byte address) : address(address) {}
 
 void I2C::initialize() {
+    Serial.println(F("Initializing I2C device"));
     Wire.begin(address);
 }
 
 void I2C::registerReceiveEventHandler(ReceiveEventHandler * handler) {
+    Serial.println(F("Registering I2C receive event handler"));
     receiveEventHandlers[handler->command()] = handler;
 }
 
 void I2C::registerRequestEventHandler(RequestEventHandler * handler) {
+    Serial.println(F("Registering I2C request event handler"));
     requestEventHandlers[handler->command()] = handler;
 }
 
