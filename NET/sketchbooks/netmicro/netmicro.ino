@@ -1,4 +1,8 @@
+#include <SoftwareSerial.h>
+#include <Wire.h>
+
 #include <StandardCplusplus.h>
+
 #include "MemoryFree.h"
 
 #include "configuration.h"
@@ -11,9 +15,7 @@
 #include "EventBusHandlers.h"
 
 #include "WiFi.h"
-#include "AdafruitESP8266.h"
-
-#include <Wire.h>
+#include "AdafruitHuzzahESP8266.h"
 
 
 /**
@@ -27,7 +29,7 @@ PingHandler pingHandler;
 StatusHandler statusHandler;
 ConnectHandler connectHandler(&eventBus);
 
-AdafruitESP8266 wifiDevice;
+AdafruitHuzzahESP8266 wifiDevice;
 WiFi wifi(&statusHandler, &wifiDevice);
 
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
@@ -73,6 +75,7 @@ void registerI2CEventHandlers() {
 
 void initializeSerial(void) {
     Serial.begin(115200);
+    while(!Serial);
     Serial.println(F("\nInitialized serial communication"));
 }
 
