@@ -78,6 +78,8 @@ void initializeSerial(void) {
 void setup(void) {
     initializeSerial();
 
+    registerEventBusHandlers();
+
     registerProtocolHandlers();
 
     registerI2CEventHandlers();
