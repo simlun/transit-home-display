@@ -49,6 +49,8 @@ Usage
 TODO: The `SSID`, `PASSPHRASE`, `HOST` and `PATH` will be stored in EEPROM
 (where memory is kept after reset and power loss).
 
+TODO: Write `DISCONNECT` to the `CONNECT` address to disconnect.
+
 
 Registers and Labels
 --------------------
@@ -66,7 +68,7 @@ STATUS     0x02       R              STARTING,
 
 SSID       0x03       W     0x00     [32 ASCII characters]
 PASSPHRASE 0x04       W     0x20     [32 ASCII characters]
-CONNECT    0x05       W              {WPA2, DISCONNECT}
+CONNECT    0x05       W              {WPA2, WPA, WEP}
 
 HOST       0x06       W     0x40     [32 ASCII characters]
 PATH       0x07       W     0x60     [32 ASCII characters]
