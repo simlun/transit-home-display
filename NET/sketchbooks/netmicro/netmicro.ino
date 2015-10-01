@@ -29,7 +29,12 @@ PingHandler pingHandler;
 StatusHandler statusHandler;
 ConnectHandler connectHandler(&eventBus);
 
-AdafruitHuzzahESP8266 wifiDevice;
+#define ARD_RX_ESP_TX 2
+#define ARD_TX_ESP_RX 3
+// Arduino RX = ESP TX, Arduino TX = ESP RX
+SoftwareSerial softser(ARD_RX_ESP_TX, ARD_TX_ESP_RX);
+
+AdafruitHuzzahESP8266 wifiDevice(&softser);
 WiFi wifi(&statusHandler, &wifiDevice);
 
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
@@ -82,19 +87,26 @@ void initializeSerial(void) {
 void setup(void) {
     initializeSerial();
 
-    registerEventBusHandlers();
+    //registerEventBusHandlers();
 
-    registerProtocolHandlers();
+    //registerProtocolHandlers();
 
-    registerI2CEventHandlers();
-    i2c.initialize();
+    //registerI2CEventHandlers();
+    //i2c.initialize();
 
     printFreeMemory();
 
-    statusHandler.setStatus(OFFLINE);
+    //statusHandler.setStatus(OFFLINE);
+
+    // Scratch area
+    // ------------
+    wifiDevice.wpa2Connect();
 }
 
 void loop(void) {
-    eventBus.process();
-    delay(0.1);
+    //eventBus.process();
+    //delay(0.1);
+
+    // Scratch area
+    // ------------
 }
