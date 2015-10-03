@@ -16,26 +16,73 @@ bool AdafruitHuzzahESP8266::initialize() {
     softser->begin(9600);
     while(!softser);
 
-    bool resetSuccess = hardReset();
-    if (!resetSuccess) {
+    if (!hardReset()) {
         Serial.println(F("ERROR: Could not hard reset"));
         return false;
     }
+    Serial.print('.');
 
-    // TODO Continue proper initialization...
-    softser->println("foo;");
-    Serial.println(softser->readString());
+    if (!sendVoidCommand(F("wifi.setmode(wifi.STATION);"))) {
+        return false;
+    }
+    Serial.print('.');
 
-    // TODO Method that sends a command and expects it to finish with some
-    // response then the > within a timeout.
+    if (!sendVoidCommand(F("wifi.sta.disconnect();"))) {
+        return false;
+    }
+    Serial.print('.');
+
+    if (!sendVoidCommand(F("wifi.sta.autoconnect(0);"))) {
+        return false;
+    }
+    Serial.print('.');
+
+    if (!sendCommandWithExpectedResponse(F("print(wifi.sta.status());"), "0")) {
+        return false;
+    }
+    Serial.print('.');
+
+    Serial.println();
 
     Serial.println(F("AdafruitHuzzahESP8266 initialized"));
     return true;
 }
 
-bool AdafruitHuzzahESP8266::hardReset() {
-    Serial.println(F("AdafruitHuzzahESP8266 hard reset"));
+bool AdafruitHuzzahESP8266::sendVoidCommand(Fstr * command) {
+    softser->println(command);
+    if (!softser->find(">")) {
+        Serial.print(F("Executed: "));
+        Serial.println(command);
+        Serial.println(F("ERROR: Expected the prompt"));
+        return false;
+    }
+    softser->readString(); // Discard prompt whitespace
+    return true;
+}
 
+bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(Fstr * command, String expectedResponse) {
+    softser->println(command);
+    softser->readStringUntil('\n'); // Discard echo
+    String response = softser->readStringUntil('\r');
+    if (!response.equals(expectedResponse)) {
+        Serial.println(F("ERROR: Expected:"));
+        Serial.println(expectedResponse);
+        Serial.println(F("but got:"));
+        Serial.println(response);
+        Serial.println(F("instead."));
+        return false;
+    }
+    if (!softser->find(">")) {
+        Serial.print(F("Executed: "));
+        Serial.println(command);
+        Serial.println(F("ERROR: Expected the prompt"));
+        return false;
+    }
+    softser->readString(); // Discard prompt whitespace
+    return true;
+}
+
+bool AdafruitHuzzahESP8266::hardReset() {
     // Toggle reset pin
     digitalWrite(ARD_RESET_PIN, LOW);
     pinMode(ARD_RESET_PIN, OUTPUT); // Open drain; reset -> GND
@@ -50,10 +97,14 @@ bool AdafruitHuzzahESP8266::hardReset() {
     // > 
     // ---------------------------------------------------------------
 
-    // Discard first three lines
+    // Discard first line of jibberish
+    softser->readStringUntil('\n');
+
+    // Print: "NodeMCU 0.9.5 build 20150318  powered by Lua 5.1.4"
     Serial.println(softser->readStringUntil('\n'));
-    Serial.println(softser->readStringUntil('\n'));
-    Serial.println(softser->readStringUntil('\n'));
+
+    // Discard: "lua: cannot open init.lua"
+    softser->readStringUntil('\n');
 
     // Then find prompt
     bool found;
@@ -64,16 +115,7 @@ bool AdafruitHuzzahESP8266::hardReset() {
     }
 
     // Try echoing a message to make sure it's responsive
-    softser->println(F("print(\"hello\");"));
-    found = softser->find("hello");
-    if (!found) {
-        Serial.println(F("ERROR: Did not get response from device"));
-        return false;
-    }
-
-    found = softser->find(">");
-    if (!found) {
-        Serial.println(F("ERROR: Expected the prompt"));
+    if (!sendCommandWithExpectedResponse(F("print(\"hello\");"), "hello")) {
         return false;
     }
 
