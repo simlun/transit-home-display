@@ -42,28 +42,29 @@ bool AdafruitHuzzahESP8266::hardReset() {
     delay(10); // Hold a moment
     pinMode(ARD_RESET_PIN, INPUT); // Back to high-impedance pin state
 
-    // Throw away initial messages from ESP8266 until first prompt:
+    // Expected data read after hard reset:
     // ---------------------------------------------------------------
-    // ..jibberish..NodeMCU 0.9.5 build 20150318  powered by Lua 5.1.4
+    // ..jibberish..
+    // NodeMCU 0.9.5 build 20150318  powered by Lua 5.1.4
     // lua: cannot open init.lua
     // > 
     // ---------------------------------------------------------------
-    char c;
-    bool initialized = false;
-    while (!initialized) {
-        while (softser->available() > 0) {
-            c = softser->read();
-            if (c == '>') {
-                initialized = true;
-                // Note that it will continue to read until no more data is
-                // available, then break the !initialized loop.
-            }
-        }
+
+    // Discard first three lines
+    Serial.println(softser->readStringUntil('\n'));
+    Serial.println(softser->readStringUntil('\n'));
+    Serial.println(softser->readStringUntil('\n'));
+
+    // Then find prompt
+    bool found;
+    found = softser->find(">");
+    if (!found) {
+        Serial.println(F("ERROR: Could not find NodeMCU prompt"));
+        return false;
     }
 
     // Try echoing a message to make sure it's responsive
     softser->println(F("print(\"hello\");"));
-    bool found;
     found = softser->find("hello");
     if (!found) {
         Serial.println(F("ERROR: Did not get response from device"));
@@ -74,6 +75,11 @@ bool AdafruitHuzzahESP8266::hardReset() {
     if (!found) {
         Serial.println(F("ERROR: Expected the prompt"));
         return false;
+    }
+
+    // If there's more data to read, do so and throw it away
+    while (softser->available() > 0) {
+        softser->read();
     }
 
     return true;
