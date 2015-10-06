@@ -5,6 +5,18 @@ WiFi::WiFi(StatusHandler * statusHandler, WiFiDevice * wifiDevice)
     : statusHandler(statusHandler),
       wifiDevice(wifiDevice) {}
 
+void WiFi::initialize() {
+    Serial.println(F("Initializing WiFi"));
+    bool initializationSucceeded = wifiDevice->initialize();
+    if (initializationSucceeded) {
+        Serial.println(F("WiFi initialization succeeded"));
+        statusHandler->setStatus(OFFLINE);
+    } else {
+        Serial.println(F("WiFi initialization failed"));
+        statusHandler->setStatus(FAILED);
+    }
+}
+
 void WiFi::wpa2Connect() {
     Serial.println(F("Connecting to WPA2 WiFi"));
     statusHandler->setStatus(CONNECTING);

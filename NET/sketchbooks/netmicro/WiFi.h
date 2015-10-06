@@ -6,6 +6,7 @@
 
 class WiFiDevice {
     public:
+        virtual bool initialize() = 0;
         virtual bool wpa2Connect() = 0;
 };
 
@@ -14,6 +15,7 @@ class WiFi {
     WiFiDevice * wifiDevice;
     public:
         WiFi(StatusHandler *, WiFiDevice *);
+        void initialize();
         void wpa2Connect();
 };
 

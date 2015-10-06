@@ -5,7 +5,7 @@
 AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(SoftwareSerial * softser) : softser(softser) {}
 
 bool AdafruitHuzzahESP8266::wpa2Connect() {
-    initialize();
+    // TODO
     return false;
 }
 
