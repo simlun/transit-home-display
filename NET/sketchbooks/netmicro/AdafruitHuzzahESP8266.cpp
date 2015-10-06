@@ -50,13 +50,21 @@ bool AdafruitHuzzahESP8266::initialize() {
 
 bool AdafruitHuzzahESP8266::sendVoidCommand(Fstr * command) {
     softser->println(command);
-    if (!softser->find(">")) {
+
+    // Discard echo
+    softser->readStringUntil('\n');
+
+    if (!softser->find("> ")) {
         Serial.print(F("Executed: "));
         Serial.println(command);
         Serial.println(F("ERROR: Expected the prompt"));
         return false;
     }
-    softser->readString(); // Discard prompt whitespace
+
+    if (softser->available() > 0) {
+        Serial.println(F("ERROR: Did not expect any more data"));
+        return false;
+    }
     return true;
 }
 
@@ -72,13 +80,18 @@ bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(Fstr * command, Stri
         Serial.println(F("instead."));
         return false;
     }
-    if (!softser->find(">")) {
+
+    if (!softser->find("> ")) {
         Serial.print(F("Executed: "));
         Serial.println(command);
         Serial.println(F("ERROR: Expected the prompt"));
         return false;
     }
-    softser->readString(); // Discard prompt whitespace
+
+    if (softser->available() > 0) {
+        Serial.println(F("ERROR: Did not expect any more data"));
+        return false;
+    }
     return true;
 }
 
@@ -108,20 +121,21 @@ bool AdafruitHuzzahESP8266::hardReset() {
 
     // Then find prompt
     bool found;
-    found = softser->find(">");
+    found = softser->find("> ");
     if (!found) {
-        Serial.println(F("ERROR: Could not find NodeMCU prompt"));
+        Serial.println(F("ERROR: Could not find prompt"));
         return false;
     }
 
     // Try echoing a message to make sure it's responsive
     if (!sendCommandWithExpectedResponse(F("print(\"hello\");"), "hello")) {
+        Serial.println(F("ERROR: Could not echo"));
         return false;
     }
 
-    // If there's more data to read, do so and throw it away
-    while (softser->available() > 0) {
-        softser->read();
+    if (softser->available() > 0) {
+        Serial.println(F("ERROR: Did not expect any more data"));
+        return false;
     }
 
     return true;
