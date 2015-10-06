@@ -4,11 +4,6 @@
 
 AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(SoftwareSerial * softser) : softser(softser) {}
 
-bool AdafruitHuzzahESP8266::wpa2Connect() {
-    // TODO
-    return false;
-}
-
 bool AdafruitHuzzahESP8266::initialize() {
     Serial.println(F("AdafruitHuzzahESP8266 initializing..."));
 
@@ -48,11 +43,37 @@ bool AdafruitHuzzahESP8266::initialize() {
     return true;
 }
 
+bool AdafruitHuzzahESP8266::wpa2Connect() {
+    // TODO Use credentials from EEPROM
+    if (!sendVoidCommand(F("wifi.sta.config(\"foo\", \"barword\")"))) {
+        Serial.println(F("ERROR: Failed to configure WiFi credentials"));
+        return false;
+    }
+
+    if (!sendVoidCommand(F("wifi.sta.connect()"))) {
+        Serial.println(F("ERROR: Failed to connect"));
+        return false;
+    }
+
+    delay(1000);
+
+    while (!sendCommandWithExpectedResponse(F("print(wifi.sta.status())"), "5")) {
+        // TODO Timeout
+        delay(1000);
+    }
+
+    Serial.println(F("AdafruitHuzzahESP8266 connected!"));
+
+    return true;
+}
+
 bool AdafruitHuzzahESP8266::sendVoidCommand(Fstr * command) {
     softser->println(command);
 
     // Discard echo
     softser->readStringUntil('\n');
+
+    // TODO Error handling here
 
     if (!softser->find("> ")) {
         Serial.print(F("Executed: "));
@@ -71,14 +92,16 @@ bool AdafruitHuzzahESP8266::sendVoidCommand(Fstr * command) {
 bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(Fstr * command, String expectedResponse) {
     softser->println(command);
     softser->readStringUntil('\n'); // Discard echo
+
     String response = softser->readStringUntil('\r');
-    if (!response.equals(expectedResponse)) {
+    bool match = response.equals(expectedResponse);
+
+    if (!match) {
         Serial.println(F("ERROR: Expected:"));
         Serial.println(expectedResponse);
         Serial.println(F("but got:"));
         Serial.println(response);
         Serial.println(F("instead."));
-        return false;
     }
 
     if (!softser->find("> ")) {
@@ -92,7 +115,8 @@ bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(Fstr * command, Stri
         Serial.println(F("ERROR: Did not expect any more data"));
         return false;
     }
-    return true;
+
+    return match;
 }
 
 bool AdafruitHuzzahESP8266::hardReset() {

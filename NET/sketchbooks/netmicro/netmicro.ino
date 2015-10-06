@@ -98,5 +98,5 @@ void setup(void) {
 
 void loop(void) {
     eventBus.process();
-    delay(0.1);
+    delay(1);
 }
