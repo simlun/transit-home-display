@@ -22,6 +22,14 @@ class StatusHandler : public RequestEventHandler {
         void setStatus(byte);
 };
 
+class PassphraseHandler : public ReceiveEventHandler {
+    public:
+        PassphraseHandler(EventBus *);
+        byte command();
+        byte numberOfBytesRequested();
+        void handleBytes(byte[]);
+};
+
 class ConnectHandler : public ReceiveEventHandler {
     public:
         ConnectHandler(EventBus *);

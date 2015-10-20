@@ -66,14 +66,22 @@ STATUS     0x02       R              STARTING,
                                      BUSY,
                                      FAILED, DEAD
 
-SSID       0x03       W     0x00     [32 ASCII characters]
-PASSPHRASE 0x04       W     0x20     [32 ASCII characters]
-CONNECT    0x05       W              {WPA2, WPA, WEP}
+SSID       0x10       W     0-7      0x00 + [8 first ASCII characters]
+SSID       0x10       W     8-15     0x01 + [8 ASCII characters]
+SSID       0x10       W     16-23    0x02 + [8 ASCII characters]
+SSID       0x10       W     24-31    0x03 + [8 last ASCII characters]
 
-HOST       0x06       W     0x40     [32 ASCII characters]
-PATH       0x07       W     0x60     [32 ASCII characters]
-DO         0x08       W              {GET}
-RESPONSE   0x09       R              [256 bytes]
+PASSPHRASE 0x11       W     32-39    0x00 + [8 first ASCII characters]
+PASSPHRASE 0x11       W     40-47    0x01 + [8 ASCII characters]
+PASSPHRASE 0x11       W     48-55    0x02 + [8 ASCII characters]
+PASSPHRASE 0x11       W     56-63    0x03 + [8 last ASCII characters]
+
+CONNECT    0x12       W              {WPA2, WPA, WEP}
+
+HOST       0x20       W     0x40     [8 ASCII characters]
+PATH       0x21       W     0x60     [8 ASCII characters]
+DO         0x22       W              {GET}
+RESPONSE   0x23       R              [256 bytes]
 ```
 
 ```

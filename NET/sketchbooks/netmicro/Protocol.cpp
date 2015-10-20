@@ -43,6 +43,35 @@ void StatusHandler::setStatus(byte s) {
 
 
 /**
+ * Passphrase
+ */
+
+PassphraseHandler::PassphraseHandler(EventBus * eventBus) : ReceiveEventHandler(eventBus) {}
+
+byte PassphraseHandler::command() {
+    return PASSPHRASE;
+}
+
+byte PassphraseHandler::numberOfBytesRequested() {
+    // offset + 8 bytes = 9
+    return 9;
+}
+
+void PassphraseHandler::handleBytes(byte buffer[]) {
+    // TODO 1st byte is an offset
+    // TODO 8 rest bytes are part of the passphrase
+    // TODO Store it in EEPROM
+    for (byte i = 0; i < numberOfBytesRequested(); i++) {
+        Serial.print(i, DEC);
+        Serial.print(":");
+        Serial.println(buffer[i], HEX);
+    }
+    Serial.println("-");
+    // TODO
+}
+
+
+/**
  * Connect
  */
 

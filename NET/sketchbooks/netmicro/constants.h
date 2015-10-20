@@ -8,13 +8,15 @@
 
 #define PING       0x01
 #define STATUS     0x02
-#define SSID       0x03
-#define PASSPHRASE 0x04
-#define CONNECT    0x05
-#define HOST       0x06
-#define PATH       0x07
-#define DO         0x08
-#define RESPONSE   0x09
+
+#define SSID       0x10
+#define PASSPHRASE 0x11
+#define CONNECT    0x12
+
+#define HOST       0x20
+#define PATH       0x21
+#define DO         0x22
+#define RESPONSE   0x23
 
 
 /**

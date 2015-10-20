@@ -27,6 +27,7 @@ I2C i2c(MY_I2C_ADDRESS);
 
 PingHandler pingHandler;
 StatusHandler statusHandler;
+PassphraseHandler passphraseHandler(&eventBus);
 ConnectHandler connectHandler(&eventBus);
 
 #define ARD_RX_ESP_TX 2
@@ -50,6 +51,7 @@ void registerEventBusHandlers() {
 void registerProtocolHandlers() {
     i2c.registerRequestEventHandler(&pingHandler);
     i2c.registerRequestEventHandler(&statusHandler);
+    i2c.registerReceiveEventHandler(&passphraseHandler);
     i2c.registerReceiveEventHandler(&connectHandler);
 }
 

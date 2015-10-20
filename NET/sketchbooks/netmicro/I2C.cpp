@@ -25,13 +25,11 @@ void I2C::registerRequestEventHandler(RequestEventHandler * handler) {
 }
 
 void I2C::onReceiveEvent(int numBytesReadFromMaster) {
-    if (command == NULL) {
-        command = readSingleByte();
-    } else {
+    command = readSingleByte();
+    if (numBytesReadFromMaster > 1) {
         handleReceiveCommand();
         command = NULL;
     }
-    readAndThrowAwayRest();
 }
 
 void I2C::handleReceiveCommand() {
@@ -41,7 +39,19 @@ void I2C::handleReceiveCommand() {
         if (numberOfBytesRequested == 1) {
             handler->handleByte(readSingleByte());
         } else if (numberOfBytesRequested > 1) {
-            // TODO Read into a buffer and pass to handler->handleBytes(...)
+            // Prepare buffer
+            byte buffer[numberOfBytesRequested];
+            for (byte i = 0; i < numberOfBytesRequested; i++) {
+                buffer[i] = NULL;
+            }
+
+            // Read into buffer
+            for (byte i = 0; Wire.available() && i < numberOfBytesRequested; i++) {
+                buffer[i] = Wire.read();
+            }
+            readAndThrowAwayRest();
+
+            handler->handleBytes(buffer);
         }
     }
 }
@@ -90,3 +100,7 @@ void I2C::readAndThrowAwayRest() {
  */
 
 ReceiveEventHandler::ReceiveEventHandler(EventBus * eventBus) : eventBus(eventBus) {}
+
+void ReceiveEventHandler::handleByte(byte b) {}
+
+void ReceiveEventHandler::handleBytes(byte buffer[]) {}

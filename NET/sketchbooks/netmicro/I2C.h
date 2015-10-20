@@ -21,7 +21,8 @@ class ReceiveEventHandler {
         ReceiveEventHandler(EventBus *);
         virtual byte command() = 0;
         virtual byte numberOfBytesRequested() = 0;
-        virtual void handleByte(byte) = 0;
+        virtual void handleByte(byte);
+        virtual void handleBytes(byte[]);
 };
 
 class I2C {
