@@ -6,14 +6,12 @@
 
 #include "WiFi.h"
 
-typedef const __FlashStringHelper Fstr; // PROGMEM/flash-resident string
-
 class AdafruitHuzzahESP8266 : public WiFiDevice {
     private:
         SoftwareSerial * softser;
         bool hardReset();
-        bool sendVoidCommand(Fstr *);
-        bool sendCommandWithExpectedResponse(Fstr *, String);
+        bool sendVoidCommand(char *);
+        bool sendCommandWithExpectedResponse(char *, char *);
     public:
         AdafruitHuzzahESP8266(SoftwareSerial *);
         bool initialize();

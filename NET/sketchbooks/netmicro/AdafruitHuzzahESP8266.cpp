@@ -17,22 +17,22 @@ bool AdafruitHuzzahESP8266::initialize() {
     }
     Serial.print('.');
 
-    if (!sendVoidCommand(F("wifi.setmode(wifi.STATION);"))) {
+    if (!sendVoidCommand("wifi.setmode(wifi.STATION);")) {
         return false;
     }
     Serial.print('.');
 
-    if (!sendVoidCommand(F("wifi.sta.disconnect();"))) {
+    if (!sendVoidCommand("wifi.sta.disconnect();")) {
         return false;
     }
     Serial.print('.');
 
-    if (!sendVoidCommand(F("wifi.sta.autoconnect(0);"))) {
+    if (!sendVoidCommand("wifi.sta.autoconnect(0);")) {
         return false;
     }
     Serial.print('.');
 
-    if (!sendCommandWithExpectedResponse(F("print(wifi.sta.status());"), "0")) {
+    if (!sendCommandWithExpectedResponse("print(wifi.sta.status());", "0")) {
         return false;
     }
     Serial.print('.');
@@ -45,19 +45,19 @@ bool AdafruitHuzzahESP8266::initialize() {
 
 bool AdafruitHuzzahESP8266::wpa2Connect() {
     // TODO Use credentials from EEPROM
-    if (!sendVoidCommand(F("wifi.sta.config(\"foo\", \"barword\")"))) {
+    if (!sendVoidCommand("wifi.sta.config(\"foo\", \"barword\")")) {
         Serial.println(F("ERROR: Failed to configure WiFi credentials"));
         return false;
     }
 
-    if (!sendVoidCommand(F("wifi.sta.connect()"))) {
+    if (!sendVoidCommand("wifi.sta.connect()")) {
         Serial.println(F("ERROR: Failed to connect"));
         return false;
     }
 
     delay(1000);
 
-    while (!sendCommandWithExpectedResponse(F("print(wifi.sta.status())"), "5")) {
+    while (!sendCommandWithExpectedResponse("print(wifi.sta.status())", "5")) {
         // TODO Timeout
         delay(1000);
     }
@@ -67,7 +67,7 @@ bool AdafruitHuzzahESP8266::wpa2Connect() {
     return true;
 }
 
-bool AdafruitHuzzahESP8266::sendVoidCommand(Fstr * command) {
+bool AdafruitHuzzahESP8266::sendVoidCommand(char * command) {
     softser->println(command);
 
     // Discard echo
@@ -89,7 +89,7 @@ bool AdafruitHuzzahESP8266::sendVoidCommand(Fstr * command) {
     return true;
 }
 
-bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(Fstr * command, String expectedResponse) {
+bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(char * command, char * expectedResponse) {
     softser->println(command);
     softser->readStringUntil('\n'); // Discard echo
 
@@ -152,7 +152,7 @@ bool AdafruitHuzzahESP8266::hardReset() {
     }
 
     // Try echoing a message to make sure it's responsive
-    if (!sendCommandWithExpectedResponse(F("print(\"hello\");"), "hello")) {
+    if (!sendCommandWithExpectedResponse("print(\"hello\");", "hello")) {
         Serial.println(F("ERROR: Could not echo"));
         return false;
     }
