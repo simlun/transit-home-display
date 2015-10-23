@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #include "Protocol.h"
 #include "constants.h"
 
@@ -58,16 +60,15 @@ byte PassphraseHandler::numberOfBytesRequested() {
 }
 
 void PassphraseHandler::handleBytes(byte buffer[]) {
-    // TODO 1st byte is an offset
-    // TODO 8 rest bytes are part of the passphrase
-    // TODO Store it in EEPROM
-    for (byte i = 0; i < numberOfBytesRequested(); i++) {
-        Serial.print(i, DEC);
-        Serial.print(":");
-        Serial.println(buffer[i], HEX);
+    byte address;
+    byte offset = buffer[0];
+    int eeprom_offset = 0;
+    for (byte i = 1; i < numberOfBytesRequested(); i++) {
+        address = offset * 8 + i - 1;
+        if (EEPROM.read(address) != buffer[i]) {
+            EEPROM.write(address, buffer[i]);
+        }
     }
-    Serial.println("-");
-    // TODO
 }
 
 

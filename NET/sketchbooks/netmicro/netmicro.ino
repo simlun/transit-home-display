@@ -1,5 +1,6 @@
 #include <SoftwareSerial.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 #include <StandardCplusplus.h>
 

@@ -1,5 +1,7 @@
 #include "AdafruitHuzzahESP8266.h"
 
+#include <EEPROM.h>
+
 #define ARD_RESET_PIN 4
 
 AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(SoftwareSerial * softser) : softser(softser) {}
@@ -44,8 +46,31 @@ bool AdafruitHuzzahESP8266::initialize() {
 }
 
 bool AdafruitHuzzahESP8266::wpa2Connect() {
-    // TODO Use credentials from EEPROM
-    if (!sendVoidCommand("wifi.sta.config(\"foo\", \"barword\")")) {
+    // TODO Use ssid from EEPROM
+    char * ssid = "Rector37C";
+
+    char pass[32 + 1];
+    memset(pass, NULL, 32 + 1);
+
+    for (byte addr = 0; addr < 32; addr++) {
+        pass[addr] = EEPROM.read(addr);
+    }
+
+    char * c1 = "wifi.sta.config(\"";
+    char * c2 = "\", \"";
+    char * c3 = "\")";
+    byte total_length = strlen(c1) + strlen(ssid) + strlen(c2) + strlen(pass) + strlen(c3) + 1;
+
+    char config[total_length];
+    memset(config, NULL, sizeof(config));
+
+    strcat(config, c1);
+    strcat(config, ssid);
+    strcat(config, c2);
+    strcat(config, pass);
+    strcat(config, c3);
+
+    if (!sendVoidCommand(config)) {
         Serial.println(F("ERROR: Failed to configure WiFi credentials"));
         return false;
     }
