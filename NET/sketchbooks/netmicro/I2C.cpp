@@ -96,6 +96,13 @@ void I2C::readAndThrowAwayRest() {
 
 
 /**
+ * RequestEventHandler
+ */
+
+RequestEventHandler::RequestEventHandler(EventBus * eventBus) : eventBus(eventBus) {}
+
+
+/**
  * ReceiveEventHandler
  */
 

@@ -6,6 +6,13 @@
 #include "constants.h"
 #include "WiFi.h"
 
+class EEPROMDebugHandler : public EventHandler {
+    public:
+        EEPROMDebugHandler(EventBus *);
+        Event event();
+        void handle();
+};
+
 class WPA2ConnectHandler : public EventHandler {
     private:
         WiFi * wifi;

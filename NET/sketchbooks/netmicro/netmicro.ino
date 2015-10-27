@@ -26,8 +26,8 @@
 EventBus eventBus;
 I2C i2c(MY_I2C_ADDRESS);
 
-PingHandler pingHandler;
-StatusHandler statusHandler;
+PingHandler pingHandler(&eventBus);
+StatusHandler statusHandler(&eventBus);
 SSIDHandler ssidHandler(&eventBus);
 PassphraseHandler passphraseHandler(&eventBus);
 ConnectHandler connectHandler(&eventBus);
@@ -39,6 +39,7 @@ SoftwareSerial softser(ARD_RX_ESP_TX, ARD_TX_ESP_RX);
 AdafruitHuzzahESP8266 wifiDevice(&softser);
 WiFi wifi(&statusHandler, &wifiDevice);
 
+EEPROMDebugHandler eepromDebugHandler(&eventBus);
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
 
 
@@ -47,6 +48,7 @@ WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
  */
 
 void registerEventBusHandlers() {
+    eventBus.registerHandler(&eepromDebugHandler);
     eventBus.registerHandler(&wpa2ConnectHandler);
 }
 

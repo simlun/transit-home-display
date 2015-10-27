@@ -7,6 +7,7 @@
 
 class PingHandler : public RequestEventHandler {
     public:
+        PingHandler(EventBus *);
         byte command();
         byte requestedByte();
 };
@@ -15,7 +16,7 @@ class StatusHandler : public RequestEventHandler {
     private:
         byte status;
     public:
-        StatusHandler();
+        StatusHandler(EventBus *);
         byte command();
         byte requestedByte();
 

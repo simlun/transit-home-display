@@ -1,5 +1,47 @@
 #include "EventBusHandlers.h"
+#include <EEPROM.h>
 #include "constants.h"
+
+/**
+ * EEPROMDebugHandler
+ */
+
+EEPROMDebugHandler::EEPROMDebugHandler(EventBus * eventBus)
+    : EventHandler(eventBus) {}
+
+Event EEPROMDebugHandler::event() {
+    return EEPROM_DEBUG;
+}
+
+void EEPROMDebugHandler::handle() {
+    Serial.println(F("Dumping EEPROM contents:"));
+    byte b;
+    Serial.print("0x000: ");
+    for (int i = 0; i < 1024; i++) {
+        if (i != 0 && i % 8 == 0) {
+            Serial.println();
+            Serial.print("0x");
+            if (i <= 0xF) {
+                Serial.print("00");
+            } else if (i <= 0xFF) {
+                Serial.print("0");
+            }
+            Serial.print(i, HEX);
+            Serial.print(": ");
+        }
+        b = EEPROM.read(i);
+        if (b <= 0xF) {
+            Serial.print("0");
+        }
+        Serial.print(b, HEX);
+        Serial.print(" ");
+    }
+}
+
+
+/**
+ * WPA2ConnectHandler
+ */
 
 WPA2ConnectHandler::WPA2ConnectHandler(EventBus * eventBus,
                                        WiFi * wifi)

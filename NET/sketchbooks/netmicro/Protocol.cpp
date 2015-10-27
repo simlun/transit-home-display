@@ -9,6 +9,8 @@
  * Ping
  */
 
+PingHandler::PingHandler(EventBus * eventBus) : RequestEventHandler(eventBus) {}
+
 byte PingHandler::command() {
     return PING;
 }
@@ -22,7 +24,7 @@ byte PingHandler::requestedByte() {
  * Status
  */
 
-StatusHandler::StatusHandler() {
+StatusHandler::StatusHandler(EventBus * eventBus) : RequestEventHandler(eventBus) {
     status = STARTING;
 }
 
@@ -31,6 +33,7 @@ byte StatusHandler::command() {
 }
 
 byte StatusHandler::requestedByte() {
+    eventBus->post(EEPROM_DEBUG);
     return status;
 }
 

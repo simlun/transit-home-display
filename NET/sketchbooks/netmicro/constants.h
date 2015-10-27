@@ -38,6 +38,7 @@
 #define PUT           0x6A
 #define POST          0x6B
 #define DELETE        0x6C
+#define EEPROM_DEBUG  0x70
 #define FAILED        0xF0
 #define DEAD          0xF1
 

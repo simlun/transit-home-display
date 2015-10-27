@@ -9,7 +9,10 @@
 #include "EventBus.h"
 
 class RequestEventHandler {
+    protected:
+        EventBus * eventBus;
     public:
+        RequestEventHandler(EventBus *);
         virtual byte command() = 0;
         virtual byte requestedByte() = 0;
 };
