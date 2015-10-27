@@ -28,6 +28,7 @@ I2C i2c(MY_I2C_ADDRESS);
 
 PingHandler pingHandler;
 StatusHandler statusHandler;
+SSIDHandler ssidHandler(&eventBus);
 PassphraseHandler passphraseHandler(&eventBus);
 ConnectHandler connectHandler(&eventBus);
 
@@ -52,6 +53,7 @@ void registerEventBusHandlers() {
 void registerProtocolHandlers() {
     i2c.registerRequestEventHandler(&pingHandler);
     i2c.registerRequestEventHandler(&statusHandler);
+    i2c.registerReceiveEventHandler(&ssidHandler);
     i2c.registerReceiveEventHandler(&passphraseHandler);
     i2c.registerReceiveEventHandler(&connectHandler);
 }

@@ -45,6 +45,33 @@ void StatusHandler::setStatus(byte s) {
 
 
 /**
+ * SSID
+ */
+
+SSIDHandler::SSIDHandler(EventBus * eventBus) : ReceiveEventHandler(eventBus) {}
+
+byte SSIDHandler::command() {
+    return SSID;
+}
+
+byte SSIDHandler::numberOfBytesRequested() {
+    // offset + 8 bytes = 9
+    return 9;
+}
+
+void SSIDHandler::handleBytes(byte buffer[]) {
+    byte address;
+    byte offset = buffer[0];
+    for (byte i = 1; i < numberOfBytesRequested(); i++) {
+        address = EEPROM_OFFSET_SSID + offset * 8 + i - 1;
+        if (EEPROM.read(address) != buffer[i]) {
+            EEPROM.write(address, buffer[i]);
+        }
+    }
+}
+
+
+/**
  * Passphrase
  */
 
@@ -62,9 +89,8 @@ byte PassphraseHandler::numberOfBytesRequested() {
 void PassphraseHandler::handleBytes(byte buffer[]) {
     byte address;
     byte offset = buffer[0];
-    int eeprom_offset = 0;
     for (byte i = 1; i < numberOfBytesRequested(); i++) {
-        address = offset * 8 + i - 1;
+        address = EEPROM_OFFSET_PASSPHRASE + offset * 8 + i - 1;
         if (EEPROM.read(address) != buffer[i]) {
             EEPROM.write(address, buffer[i]);
         }

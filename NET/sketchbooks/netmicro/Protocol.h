@@ -22,6 +22,14 @@ class StatusHandler : public RequestEventHandler {
         void setStatus(byte);
 };
 
+class SSIDHandler : public ReceiveEventHandler {
+    public:
+        SSIDHandler(EventBus *);
+        byte command();
+        byte numberOfBytesRequested();
+        void handleBytes(byte[]);
+};
+
 class PassphraseHandler : public ReceiveEventHandler {
     public:
         PassphraseHandler(EventBus *);

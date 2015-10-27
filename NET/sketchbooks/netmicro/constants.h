@@ -41,4 +41,13 @@
 #define FAILED        0xF0
 #define DEAD          0xF1
 
+
+/**
+ * EEPROM Offsets
+ */
+
+#define EEPROM_OFFSET_SSID       0x00
+#define EEPROM_OFFSET_PASSPHRASE 0x20
+
+
 #endif

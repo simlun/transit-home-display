@@ -2,6 +2,8 @@
 
 #include <EEPROM.h>
 
+#include "constants.h"
+
 #define ARD_RESET_PIN 4
 
 AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(SoftwareSerial * softser) : softser(softser) {}
@@ -46,14 +48,16 @@ bool AdafruitHuzzahESP8266::initialize() {
 }
 
 bool AdafruitHuzzahESP8266::wpa2Connect() {
-    // TODO Use ssid from EEPROM
-    char * ssid = "Rector37C";
+    char ssid[32 + 1];
+    memset(ssid, NULL, 32 + 1);
+    for (byte addr = 0; addr < 32; addr++) {
+        ssid[addr] = EEPROM.read(EEPROM_OFFSET_SSID + addr);
+    }
 
     char pass[32 + 1];
     memset(pass, NULL, 32 + 1);
-
     for (byte addr = 0; addr < 32; addr++) {
-        pass[addr] = EEPROM.read(addr);
+        pass[addr] = EEPROM.read(EEPROM_OFFSET_PASSPHRASE + addr);
     }
 
     char * c1 = "wifi.sta.config(\"";
