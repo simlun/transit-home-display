@@ -49,6 +49,8 @@
 
 #define EEPROM_OFFSET_SSID       0x00
 #define EEPROM_OFFSET_PASSPHRASE 0x20
+#define EEPROM_OFFSET_HOST       0x40
+#define EEPROM_OFFSET_PATH       0x80
 
 
 #endif

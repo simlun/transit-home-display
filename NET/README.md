@@ -66,20 +66,36 @@ STATUS     0x02       R              STARTING,
                                      BUSY,
                                      FAILED, DEAD
 
-SSID       0x10       W     0-7      0x00 + [8 first ASCII characters]
-SSID       0x10       W     8-15     0x01 + [8 ASCII characters]
-SSID       0x10       W     16-23    0x02 + [8 ASCII characters]
-SSID       0x10       W     24-31    0x03 + [8 last ASCII characters]
+SSID       0x10       W     0x00     0x00 + [8 first ASCII characters]
+SSID       0x10       W     0x08     0x01 + [8 ASCII characters]
+SSID       0x10       W     0x10     0x02 + [8 ASCII characters]
+SSID       0x10       W     0x18     0x03 + [8 last ASCII characters]
 
-PASSPHRASE 0x11       W     32-39    0x00 + [8 first ASCII characters]
-PASSPHRASE 0x11       W     40-47    0x01 + [8 ASCII characters]
-PASSPHRASE 0x11       W     48-55    0x02 + [8 ASCII characters]
-PASSPHRASE 0x11       W     56-63    0x03 + [8 last ASCII characters]
+PASSPHRASE 0x11       W     0x20     0x00 + [8 first ASCII characters]
+PASSPHRASE 0x11       W     0x28     0x01 + [8 ASCII characters]
+PASSPHRASE 0x11       W     0x30     0x02 + [8 ASCII characters]
+PASSPHRASE 0x11       W     0x38     0x03 + [8 last ASCII characters]
 
 CONNECT    0x12       W              {WPA2, WPA, WEP}
 
-HOST       0x20       W     0x40     [8 ASCII characters]
-PATH       0x21       W     0x60     [8 ASCII characters]
+HOST       0x20       W     0x40     0x00 + [first 8 ASCII characters]
+HOST       0x20       W     0x48     0x01 + [8 ASCII characters]
+HOST       0x20       W     0x50     0x02 + [8 ASCII characters]
+HOST       0x20       W     0x58     0x03 + [8 ASCII characters]
+HOST       0x20       W     0x60     0x04 + [8 ASCII characters]
+HOST       0x20       W     0x68     0x05 + [8 ASCII characters]
+HOST       0x20       W     0x70     0x06 + [8 ASCII characters]
+HOST       0x20       W     0x78     0x07 + [last 8 ASCII characters]
+
+PATH       0x21       W     0x80     0x00 + [first 8 ASCII characters]
+PATH       0x21       W     0x88     0x01 + [8 ASCII characters]
+PATH       0x21       W     0x90     0x02 + [8 ASCII characters]
+PATH       0x21       W     0x98     0x03 + [8 ASCII characters]
+PATH       0x21       W     0xA0     0x04 + [8 ASCII characters]
+PATH       0x21       W     0xA8     0x05 + [8 ASCII characters]
+PATH       0x21       W     0xB0     0x06 + [8 ASCII characters]
+PATH       0x21       W     0xB8     0x07 + [last 8 ASCII characters]
+
 DO         0x22       W              {GET}
 RESPONSE   0x23       R              [256 bytes]
 ```
