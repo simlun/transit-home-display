@@ -53,6 +53,10 @@ void I2C::handleReceiveCommand() {
 
             handler->handleBytes(buffer);
         }
+    } else {
+        readAndThrowAwayRest();
+        Serial.print(F("Unknown command: 0x"));
+        Serial.println(command, HEX);
     }
 }
 
