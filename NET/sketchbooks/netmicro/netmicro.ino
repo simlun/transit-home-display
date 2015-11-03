@@ -28,9 +28,16 @@ I2C i2c(MY_I2C_ADDRESS);
 
 PingHandler pingHandler(&eventBus);
 StatusHandler statusHandler(&eventBus);
-SSIDHandler ssidHandler(&eventBus);
-PassphraseHandler passphraseHandler(&eventBus);
+
+Storage ssidStorage(EEPROM_OFFSET_SSID, 32);
+SSIDHandler ssidHandler(&eventBus, &ssidStorage);
+
+Storage passphraseStorage(EEPROM_OFFSET_PASSPHRASE, 32);
+PassphraseHandler passphraseHandler(&eventBus, &passphraseStorage);
+
 ConnectHandler connectHandler(&eventBus);
+//HostHandler hostHandler(&eventBus);
+//PathHandler pathHandler(&eventBus);
 
 #define ARD_RX_ESP_TX 2
 #define ARD_TX_ESP_RX 3
@@ -58,6 +65,8 @@ void registerProtocolHandlers() {
     i2c.registerReceiveEventHandler(&ssidHandler);
     i2c.registerReceiveEventHandler(&passphraseHandler);
     i2c.registerReceiveEventHandler(&connectHandler);
+    //i2c.registerReceiveEventHandler(&hostHandler);
+    //i2c.registerReceiveEventHandler(&pathHandler);
 }
 
 

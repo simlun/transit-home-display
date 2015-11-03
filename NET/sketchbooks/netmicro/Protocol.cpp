@@ -1,5 +1,3 @@
-#include <EEPROM.h>
-
 #include "Protocol.h"
 #include "constants.h"
 
@@ -51,7 +49,9 @@ void StatusHandler::setStatus(byte s) {
  * SSID
  */
 
-SSIDHandler::SSIDHandler(EventBus * eventBus) : ReceiveEventHandler(eventBus) {}
+SSIDHandler::SSIDHandler(EventBus * eventBus, Storage * storage)
+    : ReceiveEventHandler(eventBus),
+      storage(storage) {}
 
 byte SSIDHandler::command() {
     return SSID;
@@ -63,14 +63,7 @@ byte SSIDHandler::numberOfBytesRequested() {
 }
 
 void SSIDHandler::handleBytes(byte buffer[]) {
-    byte address;
-    byte offset = buffer[0];
-    for (byte i = 1; i < numberOfBytesRequested(); i++) {
-        address = EEPROM_OFFSET_SSID + offset * 8 + i - 1;
-        if (EEPROM.read(address) != buffer[i]) {
-            EEPROM.write(address, buffer[i]);
-        }
-    }
+    storage->update(buffer);
 }
 
 
@@ -78,7 +71,9 @@ void SSIDHandler::handleBytes(byte buffer[]) {
  * Passphrase
  */
 
-PassphraseHandler::PassphraseHandler(EventBus * eventBus) : ReceiveEventHandler(eventBus) {}
+PassphraseHandler::PassphraseHandler(EventBus * eventBus, Storage * storage)
+    : ReceiveEventHandler(eventBus),
+      storage(storage) {}
 
 byte PassphraseHandler::command() {
     return PASSPHRASE;
@@ -90,14 +85,7 @@ byte PassphraseHandler::numberOfBytesRequested() {
 }
 
 void PassphraseHandler::handleBytes(byte buffer[]) {
-    byte address;
-    byte offset = buffer[0];
-    for (byte i = 1; i < numberOfBytesRequested(); i++) {
-        address = EEPROM_OFFSET_PASSPHRASE + offset * 8 + i - 1;
-        if (EEPROM.read(address) != buffer[i]) {
-            EEPROM.write(address, buffer[i]);
-        }
-    }
+    storage->update(buffer);
 }
 
 

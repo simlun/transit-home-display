@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "I2C.h"
 #include "EventBus.h"
+#include "Storage.h"
 
 class PingHandler : public RequestEventHandler {
     public:
@@ -24,16 +25,20 @@ class StatusHandler : public RequestEventHandler {
 };
 
 class SSIDHandler : public ReceiveEventHandler {
+    private:
+        Storage * storage;
     public:
-        SSIDHandler(EventBus *);
+        SSIDHandler(EventBus *, Storage *);
         byte command();
         byte numberOfBytesRequested();
         void handleBytes(byte[]);
 };
 
 class PassphraseHandler : public ReceiveEventHandler {
+    private:
+        Storage * storage;
     public:
-        PassphraseHandler(EventBus *);
+        PassphraseHandler(EventBus *, Storage *);
         byte command();
         byte numberOfBytesRequested();
         void handleBytes(byte[]);
