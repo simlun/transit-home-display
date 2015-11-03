@@ -36,8 +36,12 @@ Storage passphraseStorage(EEPROM_OFFSET_PASSPHRASE, 32);
 PassphraseHandler passphraseHandler(&eventBus, &passphraseStorage);
 
 ConnectHandler connectHandler(&eventBus);
-//HostHandler hostHandler(&eventBus);
-//PathHandler pathHandler(&eventBus);
+
+Storage hostStorage(EEPROM_OFFSET_HOST, 64);
+HostHandler hostHandler(&eventBus, &hostStorage);
+
+Storage pathStorage(EEPROM_OFFSET_PATH, 64);
+PathHandler pathHandler(&eventBus, &pathStorage);
 
 #define ARD_RX_ESP_TX 2
 #define ARD_TX_ESP_RX 3
@@ -65,8 +69,8 @@ void registerProtocolHandlers() {
     i2c.registerReceiveEventHandler(&ssidHandler);
     i2c.registerReceiveEventHandler(&passphraseHandler);
     i2c.registerReceiveEventHandler(&connectHandler);
-    //i2c.registerReceiveEventHandler(&hostHandler);
-    //i2c.registerReceiveEventHandler(&pathHandler);
+    i2c.registerReceiveEventHandler(&hostHandler);
+    i2c.registerReceiveEventHandler(&pathHandler);
 }
 
 

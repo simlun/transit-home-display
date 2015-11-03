@@ -90,6 +90,50 @@ void PassphraseHandler::handleBytes(byte buffer[]) {
 
 
 /**
+ * Host
+ */
+
+HostHandler::HostHandler(EventBus * eventBus, Storage * storage)
+    : ReceiveEventHandler(eventBus),
+      storage(storage) {}
+
+byte HostHandler::command() {
+    return HOST;
+}
+
+byte HostHandler::numberOfBytesRequested() {
+    // offset + 8 bytes = 9
+    return 9;
+}
+
+void HostHandler::handleBytes(byte buffer[]) {
+    storage->update(buffer);
+}
+
+
+/**
+ * Path
+ */
+
+PathHandler::PathHandler(EventBus * eventBus, Storage * storage)
+    : ReceiveEventHandler(eventBus),
+      storage(storage) {}
+
+byte PathHandler::command() {
+    return PATH;
+}
+
+byte PathHandler::numberOfBytesRequested() {
+    // offset + 8 bytes = 9
+    return 9;
+}
+
+void PathHandler::handleBytes(byte buffer[]) {
+    storage->update(buffer);
+}
+
+
+/**
  * Connect
  */
 

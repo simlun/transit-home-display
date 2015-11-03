@@ -44,6 +44,26 @@ class PassphraseHandler : public ReceiveEventHandler {
         void handleBytes(byte[]);
 };
 
+class HostHandler : public ReceiveEventHandler {
+    private:
+        Storage * storage;
+    public:
+        HostHandler(EventBus *, Storage *);
+        byte command();
+        byte numberOfBytesRequested();
+        void handleBytes(byte[]);
+};
+
+class PathHandler : public ReceiveEventHandler {
+    private:
+        Storage * storage;
+    public:
+        PathHandler(EventBus *, Storage *);
+        byte command();
+        byte numberOfBytesRequested();
+        void handleBytes(byte[]);
+};
+
 class ConnectHandler : public ReceiveEventHandler {
     public:
         ConnectHandler(EventBus *);
