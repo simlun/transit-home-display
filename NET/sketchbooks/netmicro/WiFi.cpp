@@ -29,3 +29,14 @@ void WiFi::wpa2Connect() {
         statusHandler->setStatus(FAILED);
     }
 }
+
+void WiFi::httpGet() {
+//    sk=net.createConnection(net.TCP, 0)
+//    sk:on("receive", function(sck, c) print(c) end )
+//    sk:connect(80,"192.168.0.66")
+//    sk:on("connection", function(sck,c)
+//        -- Wait for connection before sending.
+//        sk:send("GET / HTTP/1.1\r\nHost: 192.168.0.66\r\nConnection: keep-alive\r\nAccept: */*\r\n\r\n")
+//        end)
+    Serial.println(F("HTTP Get"));
+}

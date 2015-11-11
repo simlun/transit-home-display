@@ -36,6 +36,7 @@ void EEPROMDebugHandler::handle() {
         Serial.print(b, HEX);
         Serial.print(" ");
     }
+    Serial.println();
 }
 
 
@@ -54,4 +55,22 @@ Event WPA2ConnectHandler::event() {
 
 void WPA2ConnectHandler::handle() {
     wifi->wpa2Connect();
+}
+
+
+/**
+ * HTTPGetHandler
+ */
+
+HTTPGetHandler::HTTPGetHandler(EventBus * eventBus,
+                               WiFi * wifi)
+    : EventHandler(eventBus),
+      wifi(wifi) {}
+
+Event HTTPGetHandler::event() {
+    return GET;
+}
+
+void HTTPGetHandler::handle() {
+    wifi->httpGet();
 }

@@ -17,6 +17,7 @@ class WiFi {
         WiFi(StatusHandler *, WiFiDevice *);
         void initialize();
         void wpa2Connect();
+        void httpGet();
 };
 
 #endif

@@ -72,4 +72,12 @@ class ConnectHandler : public ReceiveEventHandler {
         void handleByte(byte);
 };
 
+class DoHandler : public ReceiveEventHandler {
+    public:
+        DoHandler(EventBus *);
+        byte command();
+        byte numberOfBytesRequested();
+        void handleByte(byte);
+};
+
 #endif

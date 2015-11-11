@@ -152,3 +152,24 @@ void ConnectHandler::handleByte(byte b) {
         eventBus->post(WPA2);
     }
 }
+
+
+/**
+ * Do
+ */
+
+DoHandler::DoHandler(EventBus * eventBus) : ReceiveEventHandler(eventBus) {}
+
+byte DoHandler::command() {
+    return DO;
+}
+
+byte DoHandler::numberOfBytesRequested() {
+    return 1;
+}
+
+void DoHandler::handleByte(byte b) {
+    if (b == GET) {
+        eventBus->post(GET);
+    }
+}

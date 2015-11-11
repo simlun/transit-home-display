@@ -22,4 +22,13 @@ class WPA2ConnectHandler : public EventHandler {
         void handle();
 };
 
+class HTTPGetHandler : public EventHandler {
+    private:
+        WiFi * wifi;
+    public:
+        HTTPGetHandler(EventBus *, WiFi *);
+        Event event();
+        void handle();
+};
+
 #endif

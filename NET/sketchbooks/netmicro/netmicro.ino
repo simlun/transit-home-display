@@ -26,6 +26,11 @@
 EventBus eventBus;
 I2C i2c(MY_I2C_ADDRESS);
 
+
+/**
+ * I2C Protocol Handlers
+ */
+
 PingHandler pingHandler(&eventBus);
 StatusHandler statusHandler(&eventBus);
 
@@ -43,15 +48,23 @@ HostHandler hostHandler(&eventBus, &hostStorage);
 Storage pathStorage(EEPROM_OFFSET_PATH, 64);
 PathHandler pathHandler(&eventBus, &pathStorage);
 
+DoHandler doHandler(&eventBus);
+
+
+/**
+ * Event Bus Handlers
+ */
+
+EEPROMDebugHandler eepromDebugHandler(&eventBus);
+
 #define ARD_RX_ESP_TX 2
 #define ARD_TX_ESP_RX 3
 SoftwareSerial softser(ARD_RX_ESP_TX, ARD_TX_ESP_RX);
-
 AdafruitHuzzahESP8266 wifiDevice(&softser);
 WiFi wifi(&statusHandler, &wifiDevice);
-
-EEPROMDebugHandler eepromDebugHandler(&eventBus);
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
+
+HTTPGetHandler httpGetHandler(&eventBus, &wifi);
 
 
 /**
@@ -61,6 +74,7 @@ WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
 void registerEventBusHandlers() {
     eventBus.registerHandler(&eepromDebugHandler);
     eventBus.registerHandler(&wpa2ConnectHandler);
+    eventBus.registerHandler(&httpGetHandler);
 }
 
 void registerProtocolHandlers() {
@@ -71,6 +85,7 @@ void registerProtocolHandlers() {
     i2c.registerReceiveEventHandler(&connectHandler);
     i2c.registerReceiveEventHandler(&hostHandler);
     i2c.registerReceiveEventHandler(&pathHandler);
+    i2c.registerReceiveEventHandler(&doHandler);
 }
 
 
