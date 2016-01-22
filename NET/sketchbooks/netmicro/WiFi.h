@@ -8,6 +8,7 @@ class WiFiDevice {
     public:
         virtual bool initialize() = 0;
         virtual bool wpa2Connect() = 0;
+        virtual bool httpGet() = 0;
 };
 
 class WiFi {

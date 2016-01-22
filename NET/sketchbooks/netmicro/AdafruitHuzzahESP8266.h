@@ -16,6 +16,7 @@ class AdafruitHuzzahESP8266 : public WiFiDevice {
         AdafruitHuzzahESP8266(SoftwareSerial *);
         bool initialize();
         bool wpa2Connect();
+        bool httpGet();
 };
 
 #endif
