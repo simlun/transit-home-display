@@ -51,6 +51,9 @@ TODO: The `SSID`, `PASSPHRASE`, `HOST` and `PATH` will be stored in EEPROM
 
 TODO: Write `DISCONNECT` to the `CONNECT` address to disconnect.
 
+TODO: Write `GPRS` to the `CONNECT` address to connect using a GPRS module
+instead of WiFi.
+
 
 Registers and Labels
 --------------------
