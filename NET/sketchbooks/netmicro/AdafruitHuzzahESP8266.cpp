@@ -86,6 +86,7 @@ bool AdafruitHuzzahESP8266::wpa2Connect() {
 
     delay(1000);
 
+    byte tries = 1;
     while (!sendCommandWithExpectedResponse("print(wifi.sta.status())", "5")) {
         // 0: STATION_IDLE,
         // 1: STATION_CONNECTING,
@@ -93,12 +94,17 @@ bool AdafruitHuzzahESP8266::wpa2Connect() {
         // 3: STATION_NO_AP_FOUND,
         // 4: STATION_CONNECT_FAIL,
         // 5: STATION_GOT_IP
-        // TODO Timeout
-        delay(1000);
+
+        // 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 = 45 seconds
+        if (tries > 9) {
+            Serial.println(F("AdafruitHuzzahESP8266 WPA2 connection failed!"));
+            return false;
+        }
+        delay(1000 * tries); // Linear backoff
+        tries++;
     }
 
     Serial.println(F("AdafruitHuzzahESP8266 connected!"));
-
     return true;
 }
 
