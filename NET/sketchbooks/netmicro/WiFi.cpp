@@ -19,6 +19,24 @@ void WiFi::initialize() {
 
 void WiFi::wpa2Connect() {
     Serial.println(F("Connecting to WPA2 WiFi"));
+
+    // Re-initialize if status isn't OFFLINE
+    byte tries = 0;
+    for (byte s = statusHandler->getStatus(); s != OFFLINE; s = statusHandler->getStatus()) {
+        if (tries > 5) {
+            Serial.println(F("Too many attempts, stopped trying to initialize. Failed."));
+            statusHandler->setStatus(FAILED);
+            return;
+        }
+        Serial.println(F("Expected status to be OFFLINE but it was:"));
+        Serial.println(s, HEX);
+        Serial.println(F("Trying to re-initialize to fix this..."));
+        delay(1000 * tries * 2); // Linear backoff
+        initialize();
+        tries++;
+    }
+
+    // Connect
     statusHandler->setStatus(CONNECTING);
     bool connectionSucceeded = wifiDevice->wpa2Connect();
     if (connectionSucceeded) {

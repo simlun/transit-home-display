@@ -44,6 +44,10 @@ void StatusHandler::setStatus(byte s) {
     status = s;
 }
 
+byte StatusHandler::getStatus() {
+    return status;
+}
+
 
 /**
  * SSID

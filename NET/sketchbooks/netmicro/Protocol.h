@@ -22,6 +22,7 @@ class StatusHandler : public RequestEventHandler {
         byte requestedByte();
 
         void setStatus(byte);
+        byte getStatus();
 };
 
 class SSIDHandler : public ReceiveEventHandler {
