@@ -87,6 +87,12 @@ bool AdafruitHuzzahESP8266::wpa2Connect() {
     delay(1000);
 
     while (!sendCommandWithExpectedResponse("print(wifi.sta.status())", "5")) {
+        // 0: STATION_IDLE,
+        // 1: STATION_CONNECTING,
+        // 2: STATION_WRONG_PASSWORD,
+        // 3: STATION_NO_AP_FOUND,
+        // 4: STATION_CONNECT_FAIL,
+        // 5: STATION_GOT_IP
         // TODO Timeout
         delay(1000);
     }
