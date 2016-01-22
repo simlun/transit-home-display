@@ -17,6 +17,10 @@ void WiFi::initialize() {
     }
 }
 
+// TODO: Rename this to simply "connect"? Because httpGet does not know about
+// different connection methods. Also later when connecting via GPRS this isn't
+// even WiFi. Let's simplify the API by defaulting to WPA2 when using WiFi. A
+// WPA variant could easily be implemented instead if needed.
 void WiFi::wpa2Connect() {
     Serial.println(F("Connecting to WPA2 WiFi"));
 
@@ -24,7 +28,7 @@ void WiFi::wpa2Connect() {
     byte tries = 0;
     for (byte s = statusHandler->getStatus(); s != OFFLINE; s = statusHandler->getStatus()) {
         if (tries > 5) {
-            Serial.println(F("Too many attempts, stopped trying to initialize. Failed."));
+            Serial.println(F("Too many attempts, stopped trying to initialize. Fail."));
             statusHandler->setStatus(FAILED);
             return;
         }
@@ -50,6 +54,30 @@ void WiFi::wpa2Connect() {
 
 void WiFi::httpGet() {
     Serial.println(F("HTTP GET"));
+
+    // Be quite blunt and re-connect if status isn't ONLINE by now
+    if (statusHandler->getStatus() != ONLINE) {
+        Serial.println(F("Status was not ONLINE, will attempt to connect..."));
+        byte tries = 0;
+        while (statusHandler->getStatus() != ONLINE) {
+            if (tries > 5) {
+                Serial.println(F("Too many attempts, stopped trying to connect."));
+                return;
+            }
+            delay(1000 * tries * 2); // Linear backoff
+            wpa2Connect();
+            tries++;
+        }
+    }
+
+    // If _still_ not ONLINE, there's no reason to even try to HTTP GET
+    if (statusHandler->getStatus() != ONLINE) {
+        Serial.println(F("Status needs to be ONLINE for HTTP GET to work. Fail."));
+        statusHandler->setStatus(FAILED);
+        return;
+    }
+
+    // Do HTTP GET
     statusHandler->setStatus(BUSY);
     bool getSucceeded = wifiDevice->httpGet();
     if (getSucceeded) {
