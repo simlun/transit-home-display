@@ -16,7 +16,7 @@
 #include "EventBusHandlers.h"
 
 #include "WiFi.h"
-#include "AdafruitHuzzahESP8266.h"
+#include "ESP8266.h"
 
 
 /**
@@ -60,7 +60,7 @@ EEPROMDebugHandler eepromDebugHandler(&eventBus);
 #define ARD_RX_ESP_TX 2
 #define ARD_TX_ESP_RX 3
 SoftwareSerial softser(ARD_RX_ESP_TX, ARD_TX_ESP_RX);
-AdafruitHuzzahESP8266 wifiDevice(&softser);
+ESP8266 wifiDevice(&softser);
 WiFi wifi(&statusHandler, &wifiDevice);
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
 
@@ -126,7 +126,6 @@ void setup(void) {
     registerI2CEventHandlers();
 
     i2c.initialize();
-    wifi.initialize();
 
     printFreeMemory();
 }

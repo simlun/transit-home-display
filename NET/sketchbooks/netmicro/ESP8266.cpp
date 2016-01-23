@@ -1,4 +1,4 @@
-#include "AdafruitHuzzahESP8266.h"
+#include "ESP8266.h"
 
 #include <EEPROM.h>
 
@@ -6,10 +6,10 @@
 
 #define ARD_RESET_PIN 4
 
-AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(SoftwareSerial * softser) : softser(softser) {}
+ESP8266::ESP8266(SoftwareSerial * softser) : softser(softser) {}
 
-bool AdafruitHuzzahESP8266::initialize() {
-    Serial.println(F("AdafruitHuzzahESP8266 initializing..."));
+bool ESP8266::initialize() {
+    Serial.println(F("ESP8266 initializing..."));
 
     // Soft serial connection to ESP8266
     softser->begin(9600);
@@ -43,11 +43,11 @@ bool AdafruitHuzzahESP8266::initialize() {
 
     Serial.println();
 
-    Serial.println(F("AdafruitHuzzahESP8266 initialized"));
+    Serial.println(F("ESP8266 initialized"));
     return true;
 }
 
-bool AdafruitHuzzahESP8266::connect() {
+bool ESP8266::wpa2Connect() {
     char ssid[32 + 1];
     memset(ssid, NULL, 32 + 1);
     for (byte addr = 0; addr < 32; addr++) {
@@ -97,18 +97,18 @@ bool AdafruitHuzzahESP8266::connect() {
 
         // 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 = 45 seconds
         if (tries > 9) {
-            Serial.println(F("AdafruitHuzzahESP8266 WPA2 connection failed!"));
+            Serial.println(F("ESP8266 WPA2 connection failed!"));
             return false;
         }
         delay(1000 * tries); // Linear backoff
         tries++;
     }
 
-    Serial.println(F("AdafruitHuzzahESP8266 connected!"));
+    Serial.println(F("ESP8266 connected!"));
     return true;
 }
 
-bool AdafruitHuzzahESP8266::sendVoidCommand(char * command) {
+bool ESP8266::sendVoidCommand(char * command) {
     softser->println(command);
 
     // Discard echo
@@ -130,7 +130,7 @@ bool AdafruitHuzzahESP8266::sendVoidCommand(char * command) {
     return true;
 }
 
-bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(char * command, char * expectedResponse) {
+bool ESP8266::sendCommandWithExpectedResponse(char * command, char * expectedResponse) {
     softser->println(command);
     softser->readStringUntil('\n'); // Discard echo
 
@@ -160,7 +160,7 @@ bool AdafruitHuzzahESP8266::sendCommandWithExpectedResponse(char * command, char
     return match;
 }
 
-bool AdafruitHuzzahESP8266::hardReset() {
+bool ESP8266::hardReset() {
     // Toggle reset pin
     digitalWrite(ARD_RESET_PIN, LOW);
     pinMode(ARD_RESET_PIN, OUTPUT); // Open drain; reset -> GND
@@ -206,19 +206,7 @@ bool AdafruitHuzzahESP8266::hardReset() {
     return true;
 }
 
-bool AdafruitHuzzahESP8266::httpGet() {
-    // sk=net.createConnection(net.TCP, 0)
-    // sk:on("receive", function(sck, c) print(c) end )
-    // sk:connect(80,"192.168.0.66")
-    // sk:on("connection", function(sck,c)
-    //     -- Wait for connection before sending.
-    //     sk:send("GET / HTTP/1.1\r\nHost: 192.168.0.66\r\nConnection: keep-alive\r\nAccept: */*\r\n\r\n")
-    //     end)
-
-    // TODO Continue developing this. I got stuck implementing HTTP GET through
-    // the NodeMCU Lua terminal like this. It seems easier and makes more sense
-    // to develop for the ESP-01 instead of the Adafruit Huzzah. I'll leave
-    // this module implementation incomplete for the time being.
+bool ESP8266::httpGet() {
 
     return false;
 }

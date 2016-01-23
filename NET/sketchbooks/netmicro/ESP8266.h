@@ -6,16 +6,16 @@
 
 #include "WiFi.h"
 
-class AdafruitHuzzahESP8266 : public WiFiDevice {
+class ESP8266 : public WiFiDevice {
     private:
         SoftwareSerial * softser;
         bool hardReset();
         bool sendVoidCommand(char *);
         bool sendCommandWithExpectedResponse(char *, char *);
     public:
-        AdafruitHuzzahESP8266(SoftwareSerial *);
+        ESP8266(SoftwareSerial *);
         bool initialize();
-        bool connect();
+        bool wpa2Connect();
         bool httpGet();
 };
 

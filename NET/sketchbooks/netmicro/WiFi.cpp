@@ -17,12 +17,8 @@ void WiFi::initialize() {
     }
 }
 
-// TODO: Rename this to simply "connect"? Because httpGet does not know about
-// different connection methods. Also later when connecting via GPRS this isn't
-// even WiFi. Let's simplify the API by defaulting to WPA2 when using WiFi. A
-// WPA variant could easily be implemented instead if needed.
-void WiFi::wpa2Connect() {
-    Serial.println(F("Connecting to WPA2 WiFi"));
+void WiFi::connect() {
+    Serial.println(F("Connecting to WiFi"));
 
     // Re-initialize if status isn't OFFLINE
     byte tries = 0;
@@ -42,7 +38,7 @@ void WiFi::wpa2Connect() {
 
     // Connect
     statusHandler->setStatus(CONNECTING);
-    bool connectionSucceeded = wifiDevice->wpa2Connect();
+    bool connectionSucceeded = wifiDevice->connect();
     if (connectionSucceeded) {
         Serial.println(F("WiFi connection succeeded"));
         statusHandler->setStatus(ONLINE);
@@ -65,7 +61,7 @@ void WiFi::httpGet() {
                 return;
             }
             delay(1000 * tries * 2); // Linear backoff
-            wpa2Connect();
+            connect();
             tries++;
         }
     }

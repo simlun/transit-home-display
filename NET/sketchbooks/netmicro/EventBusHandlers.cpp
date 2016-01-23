@@ -44,6 +44,9 @@ void EEPROMDebugHandler::handle() {
  * WPA2ConnectHandler
  */
 
+// TODO: Make this a ConnectHandler instead of a WPA2ConnectHandler. Mode will
+// be decided in some other way.
+
 WPA2ConnectHandler::WPA2ConnectHandler(EventBus * eventBus,
                                        WiFi * wifi)
     : EventHandler(eventBus),
@@ -54,7 +57,7 @@ Event WPA2ConnectHandler::event() {
 }
 
 void WPA2ConnectHandler::handle() {
-    wifi->wpa2Connect();
+    wifi->connect();
 }
 
 
