@@ -10,7 +10,7 @@ class ESP8266 : public WiFiDevice {
     private:
         SoftwareSerial * softser;
         bool hardReset();
-        bool setStationMode();
+        bool sendValueUpdate(char *, char *, char *);
         bool sendVoidCommand(char *);
         bool sendVoidCommand(char *, unsigned long);
         bool sendVoidCommand(char *, unsigned long, unsigned int);

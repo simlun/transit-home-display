@@ -32,7 +32,12 @@ bool ESP8266::initialize() {
     }
 
     // Set wifi mode to STATION
-    if (!setStationMode()) {
+    if (!sendValueUpdate("AT+CWMODE?", "+CWMODE:1", "AT+CWMODE=1")) {
+        return false;
+    }
+
+    // Disable multiple connection mode
+    if (!sendValueUpdate("AT+CIPMUX?", "+CIPMUX:0", "AT+CIPMUX=0")) {
         return false;
     }
 
@@ -129,11 +134,13 @@ bool ESP8266::hardReset() {
     return true;
 }
 
-bool ESP8266::setStationMode() {
-    if (!sendAndExpectResponseLine("AT+CWMODE?", "+CWMODE:1")) {
-        Serial.println(F("Mode was not STATION"));
-        if (!sendVoidCommand("AT+CWMODE=1")) {
-            Serial.println(F("ERROR: Could not set mode to STATION"));
+bool ESP8266::sendValueUpdate(char * query, char * expectedValue, char * setCommand) {
+    if (!sendAndExpectResponseLine(query, expectedValue)) {
+        if (!sendVoidCommand(setCommand)) {
+            Serial.println(F("ERROR: Could not send value update"));
+            return false;
+        } else if (!sendAndExpectResponseLine(query, expectedValue)) {
+            Serial.println(F("ERROR: After successfully updating the value it didn't stick"));
             return false;
         }
     }
