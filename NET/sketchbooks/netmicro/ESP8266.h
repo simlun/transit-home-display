@@ -10,12 +10,17 @@ class ESP8266 : public WiFiDevice {
     private:
         SoftwareSerial * softser;
         bool hardReset();
+        bool setStationMode();
         bool sendVoidCommand(char *);
-        bool sendCommandWithExpectedResponse(char *, char *);
+        bool sendVoidCommand(char *, unsigned long);
+        bool sendVoidCommand(char *, unsigned long, unsigned int);
+        bool sendAndExpectResponseLine(char *, char *);
+        bool sendAndExpectResponseLine(char *, char *, bool);
+        bool sendAndExpectResponseLine(char *, char *, bool, unsigned long);
     public:
         ESP8266(SoftwareSerial *);
         bool initialize();
-        bool wpa2Connect();
+        bool connect();
         bool httpGet();
 };
 

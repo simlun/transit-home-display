@@ -6,12 +6,18 @@
 
 #define ARD_RESET_PIN 4
 
+#define ESP8266_DEFAULT_COMMAND_TIMEOUT 3000
+
 ESP8266::ESP8266(SoftwareSerial * softser) : softser(softser) {}
 
 bool ESP8266::initialize() {
     Serial.println(F("ESP8266 initializing..."));
 
+    // High-impedance pin state
+    pinMode(ARD_RESET_PIN, INPUT);
+
     // Soft serial connection to ESP8266
+    softser->setTimeout(ESP8266_DEFAULT_COMMAND_TIMEOUT);
     softser->begin(9600);
     while(!softser);
 
@@ -19,35 +25,22 @@ bool ESP8266::initialize() {
         Serial.println(F("ERROR: Could not hard reset"));
         return false;
     }
-    Serial.print('.');
 
-    if (!sendVoidCommand("wifi.setmode(wifi.STATION);")) {
+    // Make sure it is disconnected
+    if (!sendVoidCommand("AT+CWQAP")) {
         return false;
     }
-    Serial.print('.');
 
-    if (!sendVoidCommand("wifi.sta.disconnect();")) {
+    // Set wifi mode to STATION
+    if (!setStationMode()) {
         return false;
     }
-    Serial.print('.');
-
-    if (!sendVoidCommand("wifi.sta.autoconnect(0);")) {
-        return false;
-    }
-    Serial.print('.');
-
-    if (!sendCommandWithExpectedResponse("print(wifi.sta.status());", "0")) {
-        return false;
-    }
-    Serial.print('.');
-
-    Serial.println();
 
     Serial.println(F("ESP8266 initialized"));
     return true;
 }
 
-bool ESP8266::wpa2Connect() {
+bool ESP8266::connect() {
     char ssid[32 + 1];
     memset(ssid, NULL, 32 + 1);
     for (byte addr = 0; addr < 32; addr++) {
@@ -60,9 +53,9 @@ bool ESP8266::wpa2Connect() {
         pass[addr] = EEPROM.read(EEPROM_OFFSET_PASSPHRASE + addr);
     }
 
-    char * c1 = "wifi.sta.config(\"";
-    char * c2 = "\", \"";
-    char * c3 = "\")";
+    char * c1 = "AT+CWJAP=\"";
+    char * c2 = "\",\"";
+    char * c3 = "\"";
     byte total_length = strlen(c1) + strlen(ssid) + strlen(c2) + strlen(pass) + strlen(c3) + 1;
 
     char config[total_length];
@@ -74,90 +67,23 @@ bool ESP8266::wpa2Connect() {
     strcat(config, pass);
     strcat(config, c3);
 
-    if (!sendVoidCommand(config)) {
-        Serial.println(F("ERROR: Failed to configure WiFi credentials"));
+    Serial.println(F("ESP8266 connecting to:"));
+    Serial.println(config);
+
+    if (!sendVoidCommand(config, 30000, 3)) {
+        Serial.println(F("ERROR: Failed to join WiFi"));
         return false;
-    }
-
-    if (!sendVoidCommand("wifi.sta.connect()")) {
-        Serial.println(F("ERROR: Failed to connect"));
-        return false;
-    }
-
-    delay(1000);
-
-    byte tries = 1;
-    while (!sendCommandWithExpectedResponse("print(wifi.sta.status())", "5")) {
-        // 0: STATION_IDLE,
-        // 1: STATION_CONNECTING,
-        // 2: STATION_WRONG_PASSWORD,
-        // 3: STATION_NO_AP_FOUND,
-        // 4: STATION_CONNECT_FAIL,
-        // 5: STATION_GOT_IP
-
-        // 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 = 45 seconds
-        if (tries > 9) {
-            Serial.println(F("ESP8266 WPA2 connection failed!"));
-            return false;
-        }
-        delay(1000 * tries); // Linear backoff
-        tries++;
     }
 
     Serial.println(F("ESP8266 connected!"));
     return true;
 }
 
-bool ESP8266::sendVoidCommand(char * command) {
-    softser->println(command);
+bool ESP8266::httpGet() {
 
-    // Discard echo
-    softser->readStringUntil('\n');
+    // TODO
 
-    // TODO Error handling here
-
-    if (!softser->find("> ")) {
-        Serial.print(F("Executed: "));
-        Serial.println(command);
-        Serial.println(F("ERROR: Expected the prompt"));
-        return false;
-    }
-
-    if (softser->available() > 0) {
-        Serial.println(F("ERROR: Did not expect any more data"));
-        return false;
-    }
-    return true;
-}
-
-bool ESP8266::sendCommandWithExpectedResponse(char * command, char * expectedResponse) {
-    softser->println(command);
-    softser->readStringUntil('\n'); // Discard echo
-
-    String response = softser->readStringUntil('\r');
-    bool match = response.equals(expectedResponse);
-
-    if (!match) {
-        Serial.println(F("ERROR: Expected:"));
-        Serial.println(expectedResponse);
-        Serial.println(F("but got:"));
-        Serial.println(response);
-        Serial.println(F("instead."));
-    }
-
-    if (!softser->find("> ")) {
-        Serial.print(F("Executed: "));
-        Serial.println(command);
-        Serial.println(F("ERROR: Expected the prompt"));
-        return false;
-    }
-
-    if (softser->available() > 0) {
-        Serial.println(F("ERROR: Did not expect any more data"));
-        return false;
-    }
-
-    return match;
+    return false;
 }
 
 bool ESP8266::hardReset() {
@@ -170,43 +96,158 @@ bool ESP8266::hardReset() {
     // Expected data read after hard reset:
     // ---------------------------------------------------------------
     // ..jibberish..
-    // NodeMCU 0.9.5 build 20150318  powered by Lua 5.1.4
-    // lua: cannot open init.lua
-    // > 
+    // [Vendor:www.ai-thinker.com Version:0.9.2.4]
+    //
+    // ready
     // ---------------------------------------------------------------
 
     // Discard first line of jibberish
-    softser->readStringUntil('\n');
-
-    // Print: "NodeMCU 0.9.5 build 20150318  powered by Lua 5.1.4"
-    Serial.println(softser->readStringUntil('\n'));
-
-    // Discard: "lua: cannot open init.lua"
-    softser->readStringUntil('\n');
-
-    // Then find prompt
-    bool found;
-    found = softser->find("> ");
-    if (!found) {
-        Serial.println(F("ERROR: Could not find prompt"));
+    if (!softser->find("\n")) {
+        Serial.println(F("ERROR: Could not discard initial jibberish!"));
         return false;
     }
 
-    // Try echoing a message to make sure it's responsive
-    if (!sendCommandWithExpectedResponse("print(\"hello\");", "hello")) {
-        Serial.println(F("ERROR: Could not echo"));
+    // Print welcome message
+    Serial.println(softser->readStringUntil('\r'));
+
+    // Then find `ready`
+    if (!softser->find("ready\r\n")) {
+        Serial.println(F("ERROR: Could not find `ready` message!"));
         return false;
     }
-
     if (softser->available() > 0) {
         Serial.println(F("ERROR: Did not expect any more data"));
+        return false;
+    }
+
+    // Try sending a command
+    if (!sendVoidCommand("AT")) {
+        Serial.println(F("ERROR: Communication failure"));
         return false;
     }
 
     return true;
 }
 
-bool ESP8266::httpGet() {
+bool ESP8266::setStationMode() {
+    if (!sendAndExpectResponseLine("AT+CWMODE?", "+CWMODE:1")) {
+        Serial.println(F("Mode was not STATION"));
+        if (!sendVoidCommand("AT+CWMODE=1")) {
+            Serial.println(F("ERROR: Could not set mode to STATION"));
+            return false;
+        }
+    }
+    return true;
+}
 
-    return false;
+bool ESP8266::sendVoidCommand(char * command) {
+    return sendVoidCommand(command, ESP8266_DEFAULT_COMMAND_TIMEOUT);
+}
+
+bool ESP8266::sendVoidCommand(char * command, unsigned long timeout) {
+    softser->flush();
+    softser->setTimeout(timeout);
+    softser->print(command);
+    softser->print("\r\n");
+
+    String response = softser->readStringUntil('\n');
+    response.trim();
+    bool echo = response.equals(command);
+    if (!echo) {
+        Serial.println(F("ERROR: Expected the command:"));
+        Serial.println(command);
+        Serial.println(F("to be echoed but got:"));
+        Serial.println(response);
+        Serial.println(F("instead."));
+        return false;
+    }
+
+    do {
+        response = softser->readStringUntil('\n');
+        response.trim();
+        if (response.equals("FAIL") || response.equals("ERROR")) {
+            Serial.println(F("Got FAIL/ERROR response instead of OK!"));
+            return false;
+        }
+    } while (!response.equals("OK"));
+
+    if (softser->available() > 0) {
+        Serial.println(F("ERROR: Did not expect any more data"));
+        while (softser->available() > 0) {
+            Serial.print(softser->read());
+        }
+        Serial.println();
+        return false;
+    }
+    return true;
+}
+
+bool ESP8266::sendVoidCommand(char * command, unsigned long timeout, unsigned int tries) {
+    unsigned int retries = 0;
+    while (!sendVoidCommand(command, timeout)) {
+        if (retries == tries) {
+            Serial.println(F("Stopped retrying."));
+            return false;
+        }
+        Serial.println(F("Delaying..."));
+        delay(1000 * (1 + retries)); // Linear backoff
+        Serial.println(F("...retrying"));
+        retries++;
+    }
+    return true;
+}
+
+bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse) {
+    return sendAndExpectResponseLine(command, expectedResponse, true);
+}
+
+bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse, bool requireOk) {
+    return sendAndExpectResponseLine(command, expectedResponse, requireOk, ESP8266_DEFAULT_COMMAND_TIMEOUT);
+}
+
+bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse, bool requireOk, unsigned long timeout) {
+    softser->setTimeout(timeout);
+
+    softser->flush();
+    softser->print(command);
+    softser->print("\r\n");
+
+    String response = softser->readStringUntil('\n');
+    response.trim();
+    bool echo = response.equals(command);
+    if (!echo) {
+        Serial.println(F("ERROR: Expected the command:"));
+        Serial.println(command);
+        Serial.println(F("to be echoed but got:"));
+        Serial.println(response);
+        Serial.println(F("instead."));
+        return false;
+    }
+
+    response = softser->readStringUntil('\n');
+    response.trim();
+    bool match = response.equals(expectedResponse);
+
+    if (!match) {
+        Serial.println(F("ERROR: Expected:"));
+        Serial.println(expectedResponse);
+        Serial.println(F("but got:"));
+        Serial.println(response);
+        Serial.println(F("instead."));
+        return false;
+    }
+
+    if (requireOk && !softser->find("OK\r\n")) {
+        Serial.print(F("Executed: "));
+        Serial.println(command);
+        Serial.println(F("ERROR: Expected response to end with OK"));
+        return false;
+    }
+
+    // Discard any leftovers
+    while (softser->available() > 0) {
+        softser->read();
+    }
+
+    return true;
 }
