@@ -1,3 +1,6 @@
 [submodule "NET/sketchbooks/libraries/StandardCplusplus"]
 	path = NET/sketchbooks/libraries/StandardCplusplus
 	url = https://github.com/maniacbug/StandardCplusplus.git
+[submodule "NET/vendor/esptool"]
+	path = NET/vendor/esptool
+	url = https://github.com/themadinventor/esptool.git

@@ -1,0 +1,7 @@
+- At the official forum (http://bbs.espressif.com/viewforum.php?f=46) it seems like the newer SDK >=1.5.0 require 8Mbit flash. The ESP8266-01 i have use the "GIGADEVICE GD25Q40 4M-bit / 512K-byte" flash, so I'm using the firmware based on the 1.4.0 SDK.
+- SDK downloaded from: http://bbs.espressif.com/viewtopic.php?f=46&t=1124
+- AT formware downloaded from: http://bbs.espressif.com/viewtopic.php?f=46&t=1123
+
+- Command used to flash firmware:
+
+./esptool.py -p /dev/ttyUSB0 write_flash 0x00000 ../espressif/AT_v0.50_on_esp_iot_sdk_v1.4.0_150918/noboot/eagle.flash.bin 0x40000 ../espressif/AT_v0.50_on_esp_iot_sdk_v1.4.0_150918/noboot/eagle.irom0text.bin 0x3e000 ../espressif/AT_v0.50_on_esp_iot_sdk_v1.4.0_150918/blank.bin 0x7e000 ../espressif/AT_v0.50_on_esp_iot_sdk_v1.4.0_150918/blank.bin
