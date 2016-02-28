@@ -4,3 +4,6 @@
 [submodule "NET/vendor/esptool"]
 	path = NET/vendor/esptool
 	url = https://github.com/themadinventor/esptool.git
+[submodule "NET/sketchbooks/libraries/AltSoftSerial"]
+	path = NET/sketchbooks/libraries/AltSoftSerial
+	url = https://github.com/PaulStoffregen/AltSoftSerial.git

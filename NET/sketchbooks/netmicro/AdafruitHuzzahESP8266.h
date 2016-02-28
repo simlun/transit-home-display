@@ -2,18 +2,18 @@
 #define ADAFRUIT_ESP8266_H
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 
 #include "WiFi.h"
 
 class AdafruitHuzzahESP8266 : public WiFiDevice {
     private:
-        SoftwareSerial * softser;
+        AltSoftSerial * softser;
         bool hardReset();
         bool sendVoidCommand(char *);
         bool sendCommandWithExpectedResponse(char *, char *);
     public:
-        AdafruitHuzzahESP8266(SoftwareSerial *);
+        AdafruitHuzzahESP8266(AltSoftSerial *);
         bool initialize();
         bool connect();
         bool httpGet();

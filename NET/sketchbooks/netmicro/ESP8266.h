@@ -2,24 +2,26 @@
 #define ADAFRUIT_ESP8266_H
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 
 #include "WiFi.h"
 
 class ESP8266 : public WiFiDevice {
     private:
-        SoftwareSerial * softser;
-        bool hardReset();
+        AltSoftSerial * softser;
+        bool softReset();
         bool sendValueUpdate(char *, char *, char *);
+        bool sendValueQuery(char *, char *);
         bool sendVoidCommand(char *);
         bool sendVoidCommand(char *, unsigned long);
         bool sendVoidCommand(char *, unsigned long, unsigned int);
         bool sendAndExpectResponseLine(char *, char *);
         bool sendAndExpectResponseLine(char *, char *, bool);
         bool sendAndExpectResponseLine(char *, char *, bool, unsigned long);
+        bool searchForResponse(char *);
         bool tcpConnect();
     public:
-        ESP8266(SoftwareSerial *);
+        ESP8266(AltSoftSerial *);
         bool initialize();
         bool connect();
         bool httpGet();

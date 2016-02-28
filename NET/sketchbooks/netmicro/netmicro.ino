@@ -1,4 +1,4 @@
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 #include <Wire.h>
 #include <EEPROM.h>
 
@@ -57,9 +57,8 @@ DoHandler doHandler(&eventBus);
 
 EEPROMDebugHandler eepromDebugHandler(&eventBus);
 
-#define ARD_RX_ESP_TX 2
-#define ARD_TX_ESP_RX 3
-SoftwareSerial softser(ARD_RX_ESP_TX, ARD_TX_ESP_RX);
+// TX: 9, RX: 8
+AltSoftSerial softser;
 ESP8266 wifiDevice(&softser);
 WiFi wifi(&statusHandler, &wifiDevice);
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);

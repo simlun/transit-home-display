@@ -6,7 +6,7 @@
 
 #define ARD_RESET_PIN 4
 
-AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(SoftwareSerial * softser) : softser(softser) {}
+AdafruitHuzzahESP8266::AdafruitHuzzahESP8266(AltSoftSerial * softser) : softser(softser) {}
 
 bool AdafruitHuzzahESP8266::initialize() {
     Serial.println(F("AdafruitHuzzahESP8266 initializing..."));
