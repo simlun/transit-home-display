@@ -127,13 +127,8 @@ bool ESP8266::tcpConnect() {
     return result;
 }
 
-bool ESP8266::httpGet() {
-    Serial.println(F("[httpGet()"));
-    printFreeMemory();
-
-    if (!tcpConnect()) {
-        return false;
-    }
+bool ESP8266::sendHttpGetRequest() {
+    Serial.println(F("[sendHttpGetRequest()"));
     printFreeMemory();
 
     // TODO Dynamic CIPSEND value
@@ -142,13 +137,74 @@ bool ESP8266::httpGet() {
     softser->print("\r\n");
 
     // Expect the CIPSEND prompt
-    while (!softser->available());
+    while (softser->available() == 0);
     if (!softser->find("> ")) {
         Serial.println(F("ERROR: Could not find CIPSEND prompt"));
+        Serial.println(F("sendHttpGetRequest]"));
+        Serial.println();
         return false;
     }
 
-    // Prepare to receive data
+    // Send request
+    if (softser->overflow()) {
+        Serial.println(F("Buffer overflow!"));
+    }
+    softser->flush();
+
+    softser->setTimeout(30000);
+    // TODO Get real path from EEPROM
+    softser->print("GET / HTTP/1.0\r\nHost: example.com\r\n\r\n");
+
+    // One second delay after printing the request was recommended by the ESP8266 docs:
+    //delay(1000);
+
+    // Recv 37 bytes
+    //
+    // SEND OK
+    //
+
+    while (softser->available() == 0);
+    if (!softser->find("Recv ")) {
+        Serial.println(F("ERROR: Could not find beginning of CIPSEND response"));
+        Serial.println(F("sendHttpGetRequest]"));
+        Serial.println();
+        return false;
+    }
+    //String recvBytes = softser->readStringUntil(' ');
+    //long recvBytes_long = recvBytes.toInt();
+    // TODO: Verify recvBytes_long
+    while (softser->available() == 0);
+    if (!softser->find("37")) {
+        Serial.println(F("ERROR: Could not find length of CIPSEND response"));
+        Serial.println(F("sendHttpGetRequest]"));
+        Serial.println();
+        return false;
+    }
+
+    while (softser->available() == 0);
+    if (!softser->find(" bytes\r\n\r\n")) {
+        Serial.println(F("ERROR: Could not find end of CIPSEND response"));
+        Serial.println(F("sendHttpGetRequest]"));
+        Serial.println();
+        return false;
+    }
+    while (softser->available() == 0);
+    if (!softser->find("SEND OK\r\n\r\n")) {
+        Serial.println(F("ERROR: Could not find SEND OK"));
+        Serial.println(F("sendHttpGetRequest]"));
+        Serial.println();
+        return false;
+    }
+
+    printFreeMemory();
+    Serial.println(F("sendHttpGetRequest]"));
+    Serial.println();
+    return true;
+}
+
+bool ESP8266::httpGet() {
+    Serial.println(F("[httpGet()"));
+    printFreeMemory();
     char c;
     char statusCodeBuff[3 + 1] = {0};
     bool badHttpStatusCode = true;
@@ -158,135 +214,155 @@ bool ESP8266::httpGet() {
     int bytesRead = 0;
     String incomingDataLengthString;
     long bytesLeft;
+    char ipdOrClose[6] = {0};
+    printFreeMemory();
 
-    if (softser->overflow()) {
-        Serial.println(F("Buffer overflow!"));
-    }
-    softser->flush();
-
-    // Send request
-    softser->setTimeout(30000);
-    // TODO Get real path from EEPROM
-    //softser->print("GET / HTTP/1.0\r\n\r\n");
-    softser->print("GET / HTTP/1.0\r\nHost: example.com\r\n\r\n");
-
-    // Discard echo
-    /*
-    bytesLeft = 37; // TODO: Use correct number
-    while (bytesLeft > 0) {
-        while (softser->peek() == -1);
-        softser->read();
-        bytesLeft--;
-    }
-    */
-
-    // Wait for AT data header
-    if (!softser->find("+IPD,")) {
-        Serial.println(F("ERROR: Could not find +IPD response"));
-        Serial.println(F("httpGet]"));
-        Serial.println(F("return false"));
-        Serial.println();
+    if (!tcpConnect()) {
         return false;
     }
-    incomingDataLengthString = softser->readStringUntil(':');
-    bytesLeft = incomingDataLengthString.toInt();
-    //Serial.println(F("Receiving data of length:"));
-    //Serial.println(bytesLeft);
+    printFreeMemory();
 
-    // Read response
+    if (!sendHttpGetRequest()) {
+        return false;
+    }
+    printFreeMemory();
+
     byte step = 0;
-    while (bytesLeft > 0) {
-        while (softser->peek() == -1);
+    while (true) {
 
-        c = softser->read();
-        bytesRead++;
-        bytesLeft--;
+        while (softser->available() < 5);
+        // Strip leading line breaks (will be a line break here for every +IPD after the first one)
+        while (softser->peek() == '\r' || softser->peek() == '\n') {
+            softser->read();
+        }
 
-        if (step == 0 && bytesRead <= 4) {
-            // First line, only continue if it begins with "HTTP"
-            headerBuff[bytesRead - 1] = c;
-            if (strcmp(headerBuff, "HTTP") == 0) {
-                step++;
-                bytesRead = 0;
+        // Expect either "+IPD," or "CLOSE"(D\r\n) as the next read 5 characters
+        while (softser->available() < 5);
+        for (byte i = 0; i < 5; i++) {
+            ipdOrClose[i] = softser->read();
+        }
+
+        if (strcmp(ipdOrClose, "CLOSE") == 0) {
+            // Discard the rest of the "CLOSED\r\n" message:
+            for (byte i = 0; i < 3; i++) {
+                while (softser->available() == 0);
+                softser->read();
             }
-        } else if (step == 1) {
-            // Find beginning of status code
-            if (c == ' ') {
-                step++;
-                bytesRead = 0;
-            }
-        } else if (step == 2) {
-            // Parse status code
-            if (bytesRead <= 3) {
-                statusCodeBuff[bytesRead - 1] = c;
-            }
-            if (bytesRead == 3) {
-                if (statusCodeBuff[0] == '1' || statusCodeBuff[0] == '2' || statusCodeBuff[0] == '3') {
-                    badHttpStatusCode = false;
-                }
-                step++;
-                bytesRead = 0;
-            }
-        } else if (step == 3) {
-            // Skip rest of first HTTP line
-            if (c == '\n') {
-                step++;
-                bytesRead = 0;
-            }
-        } else if (step == 4) {
-            // Find Content-Length header key
-            if (bytesRead > 32) {
-                // Skip rest of lines longer than 32 chars
-                if (c == '\n') {
+            break;
+        } else if (strcmp(ipdOrClose, "+IPD,") == 0) {
+            // Simply continue to parsing the rest of the +IPD message.
+        } else {
+            Serial.println(F("ERROR: expected either a +IPD, or a CLOSE. Got this instead:"));
+            Serial.println(ipdOrClose);
+            Serial.println(F("httpGet]"));
+            Serial.println(F("return false"));
+            Serial.println();
+            return false;
+        }
+
+        incomingDataLengthString = softser->readStringUntil(':');
+        bytesRead = 0;
+        bytesLeft = incomingDataLengthString.toInt();
+        //Serial.println(F("Receiving data of length:"));
+        //Serial.println(bytesLeft);
+
+        // Read response
+        while (bytesLeft > 0) {
+            while (softser->peek() == -1);
+
+            c = softser->read();
+            bytesRead++;
+            bytesLeft--;
+
+            if (step == 0 && bytesRead <= 4) {
+                // First line, only continue if it begins with "HTTP"
+                headerBuff[bytesRead - 1] = c;
+                if (strcmp(headerBuff, "HTTP") == 0) {
+                    step++;
                     bytesRead = 0;
                 }
-                continue;
-            }
-            if (c == '\n') {
-                bytesRead = 0;
-                continue;
-            }
-            headerBuff[bytesRead - 1] = c;
-            headerBuff[bytesRead] = '\0';
-            if (strcmp(headerBuff, "Content-Length: ") == 0) {
-                step++;
-                bytesRead = 0;
-            }
-        } else if (step == 5 && bytesRead <= 32) {
-            // Read Content-Length header value
-            if (c == '\n') {
-                step++;
-                bytesRead = 0;
-                continue;
-            }
-            contentLength[bytesRead - 1] = c;
-            contentLength[bytesRead] = '\0';
-        } else if (step == 6) {
-            // Discard rest of headers
-            if (bytesRead > 32) {
-                // Skip rest of lines longer than 32 chars
-                if (c == '\n') {
+            } else if (step == 1) {
+                // Find beginning of status code
+                if (c == ' ') {
+                    step++;
                     bytesRead = 0;
                 }
-                continue;
-            }
-            if (c == '\n') {
-                if (headerBuff[0] == '\r') {
+            } else if (step == 2) {
+                // Parse status code
+                if (bytesRead <= 3) {
+                    statusCodeBuff[bytesRead - 1] = c;
+                }
+                if (bytesRead == 3) {
+                    if (statusCodeBuff[0] == '1' || statusCodeBuff[0] == '2' || statusCodeBuff[0] == '3') {
+                        badHttpStatusCode = false;
+                    }
+                    step++;
+                    bytesRead = 0;
+                }
+            } else if (step == 3) {
+                // Skip rest of first HTTP line
+                if (c == '\n') {
+                    step++;
+                    bytesRead = 0;
+                }
+            } else if (step == 4) {
+                // Find Content-Length header key
+                if (bytesRead > 32) {
+                    // Skip rest of lines longer than 32 chars
+                    if (c == '\n') {
+                        bytesRead = 0;
+                    }
+                    continue;
+                }
+                if (c == '\n') {
+                    bytesRead = 0;
+                    continue;
+                }
+                headerBuff[bytesRead - 1] = c;
+                headerBuff[bytesRead] = '\0';
+                if (strcmp(headerBuff, "Content-Length: ") == 0) {
+                    step++;
+                    bytesRead = 0;
+                }
+            } else if (step == 5 && bytesRead <= 32) {
+                // Read Content-Length header value
+                if (c == '\n') {
                     step++;
                     bytesRead = 0;
                     continue;
-                } else {
-                    bytesRead = 0;
+                }
+                contentLength[bytesRead - 1] = c;
+                contentLength[bytesRead] = '\0';
+            } else if (step == 6) {
+                // Discard rest of headers
+                if (bytesRead > 32) {
+                    // Skip rest of lines longer than 32 chars
+                    if (c == '\n') {
+                        bytesRead = 0;
+                    }
                     continue;
                 }
-            }
-            headerBuff[bytesRead - 1] = c;
-        } else {
-            // TODO This is the error step
+                if (c == '\n') {
+                    if (headerBuff[0] == '\r') {
+                        step++;
+                        bytesRead = 0;
+                        continue;
+                    } else {
+                        bytesRead = 0;
+                        continue;
+                    }
+                }
+                headerBuff[bytesRead - 1] = c;
+            } else {
+                // TODO This is the error step
 
-            // Store the rest 64 bytes in the cBuff
-            if (bytesRead < 64) {
-                cBuff[bytesRead - 1] = c;
+                // Store what fits in the cBuff
+                //if (bytesRead < 64) {
+                //    cBuff[bytesRead - 1] = c;
+                //} else {
+                    // Discard what doesn't fit in the cBuff
+                    Serial.print(c);
+                //}
             }
         }
     }
@@ -302,18 +378,12 @@ bool ESP8266::httpGet() {
     Serial.println(F("=============="));
     printFreeMemory();
 
-    if (!softser->find("CLOSED\r\n")) {
-        Serial.println(F("ERROR: expected the TCP connection to be CLOSED after a successful transmission"));
-        Serial.println(F("httpGet]"));
-        Serial.println(F("return false"));
-        Serial.println();
-        return false;
-    }
-
     if (softser->available() > 0) {
         Serial.println(F("ERROR: Did not expect any more data"));
-        for (char c; softser->available() > 0; c = softser->read()) {
-            Serial.print(c);
+        for (char c = softser->read(); softser->available() > 0; c = softser->read()) {
+            Serial.print("0x");
+            Serial.print(c, HEX);
+            Serial.print(", ");
         }
         Serial.println();
         Serial.println(F("httpGet]"));
@@ -434,7 +504,7 @@ bool ESP8266::sendVoidCommand(char * command, unsigned long timeout) {
     if (softser->available() > 0) {
         result = false;
         Serial.println(F("ERROR: Did not expect any more data"));
-        for (char c; softser->available() > 0; c = softser->read()) {
+        for (char c = softser->read(); softser->available() > 0; c = softser->read()) {
             Serial.print(c);
         }
         Serial.println();

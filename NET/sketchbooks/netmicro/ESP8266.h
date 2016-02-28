@@ -19,6 +19,8 @@ class ESP8266 : public WiFiDevice {
         bool sendAndExpectResponseLine(char *, char *, bool, bool);
         bool sendAndExpectResponseLine(char *, char *, bool, bool, unsigned long);
         bool tcpConnect();
+        bool sendHttpGetRequest();
+        bool receiveHttpGetResponse();
     public:
         ESP8266(AltSoftSerial *);
         bool initialize();
