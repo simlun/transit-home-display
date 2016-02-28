@@ -11,14 +11,13 @@ class ESP8266 : public WiFiDevice {
         AltSoftSerial * softser;
         bool softReset();
         bool sendValueUpdate(char *, char *, char *);
-        bool sendValueQuery(char *, char *);
         bool sendVoidCommand(char *);
         bool sendVoidCommand(char *, unsigned long);
         bool sendVoidCommand(char *, unsigned long, unsigned int);
         bool sendAndExpectResponseLine(char *, char *);
         bool sendAndExpectResponseLine(char *, char *, bool);
-        bool sendAndExpectResponseLine(char *, char *, bool, unsigned long);
-        bool searchForResponse(char *);
+        bool sendAndExpectResponseLine(char *, char *, bool, bool);
+        bool sendAndExpectResponseLine(char *, char *, bool, bool, unsigned long);
         bool tcpConnect();
     public:
         ESP8266(AltSoftSerial *);

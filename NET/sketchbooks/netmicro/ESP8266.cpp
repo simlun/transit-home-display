@@ -23,6 +23,12 @@ bool ESP8266::initialize() {
         return false;
     }
 
+    // Disable echoes
+    if (!sendVoidCommand("ATE0")) {
+        Serial.println(F("ERROR: Failed to disable echoes"));
+        return false;
+    }
+
     // Set wifi mode to STATION
     if (!sendValueUpdate("AT+CWMODE_CUR?", "+CWMODE_CUR:1", "AT+CWMODE_CUR=1")) {
         return false;
@@ -69,7 +75,7 @@ bool ESP8266::connect() {
     strcat(config, pass);
     strcat(config, c3);
 
-    Serial.println(F("ESP8266 connecting to:"));
+    Serial.print(F("ESP8266 connecting to: "));
     Serial.println(config);
 
     if (!sendVoidCommand(config, 30000, 3)) {
@@ -82,6 +88,10 @@ bool ESP8266::connect() {
 }
 
 bool ESP8266::tcpConnect() {
+    Serial.println(F("[tcpConnect()"));
+    printFreeMemory();
+    bool result = true;
+
     char host[64 + 1] = {0};
     for (byte addr = 0; addr < 64; addr++) {
         host[addr] = EEPROM.read(EEPROM_OFFSET_HOST + addr);
@@ -102,16 +112,25 @@ bool ESP8266::tcpConnect() {
     Serial.println(F("ESP8266 Starting TCP connection:"));
     Serial.println(cipstart);
 
-    if (!sendAndExpectResponseLine(cipstart, "CONNECT", true, 30000)) {
+    if (!sendAndExpectResponseLine(cipstart, "CONNECT", true, false, 30000)) {
         Serial.println(F("ERROR: Failed to start TCP connection"));
-        return false;
+        result = false;
+    } else {
+        Serial.println(F("ESP8266: Connected to remote TCP server!"));
     }
-    Serial.println(F("ESP8266: Connected to remote TCP server!"));
-    return true;
+
+    printFreeMemory();
+    Serial.println(F("tcpConnect]"));
+    Serial.print(F("return "));
+    Serial.println(result ? F("true") : F("false"));
+    Serial.println();
+    return result;
 }
 
 bool ESP8266::httpGet() {
+    Serial.println(F("[httpGet()"));
     printFreeMemory();
+
     if (!tcpConnect()) {
         return false;
     }
@@ -121,23 +140,6 @@ bool ESP8266::httpGet() {
     char * cipsend = "AT+CIPSEND=37";
     softser->print(cipsend);
     softser->print("\r\n");
-
-    // Discard part of echo
-    for (byte i = 0; i < 11; i++) {
-        while (!softser->available());
-        softser->read();
-    }
-    /*String response = softser->readStringUntil('\n');
-    response.trim();
-    bool echo = response.equals(cipsend);
-    if (!echo) {
-        Serial.println(F("ERROR: Expected the command:"));
-        Serial.println(cipsend);
-        Serial.println(F("to be echoed but got:"));
-        Serial.println(response);
-        Serial.println(F("instead."));
-        return false;
-    }*/
 
     // Expect the CIPSEND prompt
     while (!softser->available());
@@ -181,6 +183,9 @@ bool ESP8266::httpGet() {
     // Wait for AT data header
     if (!softser->find("+IPD,")) {
         Serial.println(F("ERROR: Could not find +IPD response"));
+        Serial.println(F("httpGet]"));
+        Serial.println(F("return false"));
+        Serial.println();
         return false;
     }
     incomingDataLengthString = softser->readStringUntil(':');
@@ -299,6 +304,9 @@ bool ESP8266::httpGet() {
 
     if (!softser->find("CLOSED\r\n")) {
         Serial.println(F("ERROR: expected the TCP connection to be CLOSED after a successful transmission"));
+        Serial.println(F("httpGet]"));
+        Serial.println(F("return false"));
+        Serial.println();
         return false;
     }
 
@@ -308,20 +316,33 @@ bool ESP8266::httpGet() {
             Serial.print(c);
         }
         Serial.println();
+        Serial.println(F("httpGet]"));
+        Serial.println(F("return false"));
+        Serial.println();
         return false;
     }
 
     if (softser->overflow()) {
         Serial.println(F("Buffer overflow!"));
+        Serial.println(F("httpGet]"));
+        Serial.println(F("return false"));
+        Serial.println();
         return false;
     }
 
     if (badHttpStatusCode) {
         Serial.println(F("ESP8266 HTTP GET failed with bad HTTP status code!"));
+        Serial.println(F("httpGet]"));
+        Serial.println(F("return false"));
+        Serial.println();
         return false;
     }
 
     Serial.println(F("ESP8266 HTTP GET successful!"));
+    printFreeMemory();
+    Serial.println(F("httpGet]"));
+    Serial.println(F("return true"));
+    Serial.println();
     return true;
 }
 
@@ -344,11 +365,11 @@ bool ESP8266::softReset() {
 }
 
 bool ESP8266::sendValueUpdate(char * query, char * expectedValue, char * setCommand) {
-    if (!sendValueQuery(query, expectedValue)) {
+    if (!sendAndExpectResponseLine(query, expectedValue, true, true)) {
         if (!sendVoidCommand(setCommand)) {
             Serial.println(F("ERROR: Could not send value update"));
             return false;
-        } else if (!sendValueQuery(query, expectedValue)) {
+        } else if (!sendAndExpectResponseLine(query, expectedValue, true, true)) {
             Serial.println(F("ERROR: After successfully updating the value it didn't stick"));
             return false;
         }
@@ -356,95 +377,74 @@ bool ESP8266::sendValueUpdate(char * query, char * expectedValue, char * setComm
     return true;
 }
 
-bool ESP8266::sendValueQuery(char * query, char * expectedValue) {
-    softser->flush();
-    softser->setTimeout(ESP8266_DEFAULT_COMMAND_TIMEOUT);
-    softser->print(query);
-    softser->print("\r\n");
-
-    String response = softser->readStringUntil('\n');
-    response.trim();
-    bool echo = response.equals(query);
-    if (!echo) {
-        Serial.println(F("ERROR: Expected the command:"));
-        Serial.println(query);
-        Serial.println(F("to be echoed but got:"));
-        Serial.println(response);
-        Serial.println(F("instead."));
-        return false;
-    }
-
-    response = softser->readStringUntil('\n');
-    response.trim();
-    bool match = true;
-    if (!response.equals(expectedValue)) {
-        Serial.println(F("Got unexpected value:"));
-        Serial.println(response);
-        Serial.println(F("Instead of:"));
-        Serial.println(expectedValue);
-        match = false;
-    }
-
-    do {
-        response = softser->readStringUntil('\n');
-        response.trim();
-        if (response.equals("FAIL") || response.equals("ERROR")) {
-            Serial.println(F("Got FAIL/ERROR response instead of OK!"));
-            return false;
-        }
-    } while (!response.equals("OK"));
-
-    if (softser->available() > 0) {
-        Serial.println(F("ERROR: Did not expect any more data"));
-        for (char c; softser->available() > 0; c = softser->read()) {
-            Serial.print(c);
-        }
-        Serial.println();
-        return false;
-    }
-    return match;
-}
-
 bool ESP8266::sendVoidCommand(char * command) {
     return sendVoidCommand(command, ESP8266_DEFAULT_COMMAND_TIMEOUT);
 }
 
 bool ESP8266::sendVoidCommand(char * command, unsigned long timeout) {
+    Serial.print(F("[sendVoidCommand("));
+    Serial.print(command);
+    Serial.print(F(", "));
+    Serial.print(timeout, DEC);
+    Serial.println(F(")"));
+    printFreeMemory();
+
     softser->flush();
     softser->setTimeout(timeout);
     softser->print(command);
     softser->print("\r\n");
 
-    String response = softser->readStringUntil('\n');
-    response.trim();
-    bool echo = response.equals(command);
-    if (!echo) {
-        Serial.println(F("ERROR: Expected the command:"));
-        Serial.println(command);
-        Serial.println(F("to be echoed but got:"));
-        Serial.println(response);
-        Serial.println(F("instead."));
-        return false;
-    }
+    bool result = false;
+    String response;
+    byte searchedLines = 0;
+    while (true) {
+        if (searchedLines > 100) {
+            Serial.println(F("ERROR Could not find expected line in 100 response lines. Giving up."));
+            softser->flush();
+            result = false;
+            break;
+        }
 
-    do {
         response = softser->readStringUntil('\n');
         response.trim();
-        if (response.equals("FAIL") || response.equals("ERROR")) {
+
+        if (response.equals("OK")) {
+            Serial.println(F("OK"));
+            result = true;
+            break;
+        } else if (response.equals(command)) {
+            Serial.print(F("Echo: "));
+            Serial.println(command);
+        } else if (response.equals("FAIL") || response.equals("ERROR")) {
             Serial.println(F("Got FAIL/ERROR response instead of OK!"));
-            return false;
+            result = false;
+            break;
+        } else if (response.length() == 0) {
+            Serial.println(F("Discarding blank line"));
+        } else {
+            Serial.print(F("Discarding: "));
+            Serial.println(response);
         }
-    } while (!response.equals("OK"));
+        if (softser->overflow()) {
+            Serial.println(F("Buffer overflow!"));
+        }
+        searchedLines++;
+    }
 
     if (softser->available() > 0) {
+        result = false;
         Serial.println(F("ERROR: Did not expect any more data"));
         for (char c; softser->available() > 0; c = softser->read()) {
             Serial.print(c);
         }
         Serial.println();
-        return false;
     }
-    return true;
+    printFreeMemory();
+    Serial.println(F("sendVoidCommand]"));
+    Serial.print(F("return "));
+    Serial.println(result ? F("true") : F("false"));
+    Serial.println();
+    return result;
 }
 
 bool ESP8266::sendVoidCommand(char * command, unsigned long timeout, unsigned int tries) {
@@ -467,35 +467,36 @@ bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse)
 }
 
 bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse, bool requireOk) {
-    return sendAndExpectResponseLine(command, expectedResponse, requireOk, ESP8266_DEFAULT_COMMAND_TIMEOUT);
+    return sendAndExpectResponseLine(command, expectedResponse, requireOk, false, ESP8266_DEFAULT_COMMAND_TIMEOUT);
 }
 
-bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse, bool requireOk, unsigned long timeout) {
-    String response;
-    byte searchedLines = 0;
-    bool match;
+bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse, bool requireOk, bool strict) {
+    return sendAndExpectResponseLine(command, expectedResponse, requireOk, strict, ESP8266_DEFAULT_COMMAND_TIMEOUT);
+}
+
+bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse, bool requireOk, bool strict, unsigned long timeout) {
+    Serial.print(F("[sendAndExpectResponseLine("));
+    Serial.print(command);
+    Serial.print(F(", "));
+    Serial.print(expectedResponse);
+    Serial.print(F(", "));
+    Serial.print(requireOk ? F("true") : F("false"));
+    Serial.print(F(", "));
+    Serial.print(strict ? F("true") : F("false"));
+    Serial.print(F(", "));
+    Serial.print(timeout, DEC);
+    Serial.println(F(")"));
+    printFreeMemory();
 
     softser->setTimeout(timeout);
-
-    Serial.println(F("Sending command:"));
-    Serial.println(command);
 
     softser->flush();
     softser->print(command);
     softser->print("\r\n");
 
-    response = softser->readStringUntil('\n');
-    response.trim();
-    bool echo = response.equals(command);
-    if (!echo) {
-        Serial.println(F("ERROR: Expected the command:"));
-        Serial.println(command);
-        Serial.println(F("to be echoed but got:"));
-        Serial.println(response);
-        Serial.println(F("instead."));
-        return false;
-    }
-
+    bool result = false;
+    String response;
+    byte searchedLines = 0;
     while (true) {
         if (searchedLines > 100) {
             Serial.println(F("ERROR Could not find expected line in 100 response lines. Giving up."));
@@ -504,56 +505,65 @@ bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse,
         }
         response = softser->readStringUntil('\n');
         response.trim();
-        match = response.equals(expectedResponse);
 
-        if (match) {
-            Serial.println(F("Got expected response:"));
+        if (response.equals(command)) {
+            Serial.print(F("Echo: "));
+            Serial.println(command);
+        } else if (response.equals(expectedResponse)) {
+            Serial.print(F("Got expected response: "));
             Serial.println(response);
+            result = true;
             break;
+        } else if (response.length() == 0) {
+            Serial.println(F("Discarding blank line"));
         } else {
-            Serial.println(F("Expected:"));
-            Serial.println(expectedResponse);
-            Serial.println(F("but got:"));
-            Serial.println(response);
-            Serial.println(F("instead."));
-
-            if (softser->overflow()) {
-                Serial.println(F("Buffer overflow!"));
+            if (strict) {
+                Serial.print(F("FAIL: Got unexpected response: "));
+                Serial.println(response);
+                result = false;
+                break;
+            } else {
+                Serial.print(F("Discarding: "));
+                Serial.println(response);
             }
-
-            searchedLines++;
         }
+        if (softser->overflow()) {
+            Serial.println(F("Buffer overflow!"));
+        }
+        searchedLines++;
     }
-    printFreeMemory();
 
     if (requireOk) {
         response = softser->readStringUntil('\n');
         response.trim();
         if (response.length() == 0) {
-            // The ESP8266 throws out blank lines now and then, discard them.
+            // Discard empty lines before the expected OK
             response = softser->readStringUntil('\n');
             response.trim();
         }
-        bool ok = response.equals("OK");
-        if (!ok) {
-            Serial.print(F("Executed: "));
-            Serial.println(command);
+        if (!response.equals("OK")) {
             Serial.println(F("Expected OK but got:"));
             Serial.println(response);
             Serial.println(F("ERROR: Expected response to end with OK"));
-            return false;
+            result = false;
         }
     }
 
-    // Discard any leftovers
-    while (softser->available() > 0) {
-        softser->read();
+    // Fail if we get more data than expected:
+    if (softser->available() > 0) {
+        result = false;
+        Serial.println(F("Unexpected response:"));
+        while (softser->available() > 0) {
+            Serial.print((char)softser->read());
+        }
+        Serial.println();
     }
     softser->flush();
 
-    return true;
-}
-
-bool ESP8266::searchForResponse(char * expectedResponse) {
-    return false; // TODO REMOVE THIS METHOD
+    printFreeMemory();
+    Serial.println(F("sendAndExpectResponseLine]"));
+    Serial.print(F("return "));
+    Serial.println(result ? F("true") : F("false"));
+    Serial.println();
+    return result;
 }

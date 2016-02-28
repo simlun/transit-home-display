@@ -40,7 +40,7 @@ int freeMemory() {
 }
 
 void printFreeMemory() {
-    Serial.print(F("\nfreeMemory() = "));
-    Serial.print(freeMemory());
+    Serial.print(F("freeMemory() = "));
+    Serial.print(freeMemory(), DEC);
     Serial.println(F(" bytes"));
 }
