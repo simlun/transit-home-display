@@ -28,4 +28,6 @@ class ESP8266 : public WiFiDevice {
         bool httpGet();
 };
 
+#define ESP8266_CHAR_BUFF_SIZE 64
+
 #endif

@@ -210,7 +210,7 @@ bool ESP8266::httpGet() {
     bool badHttpStatusCode = true;
     char headerBuff[32 + 1] = {0};
     char contentLength[32 + 1] = {0};
-    char cBuff[64 + 1] = {0};
+    char cBuff[ESP8266_CHAR_BUFF_SIZE + 1] = {0};
     int bytesRead = 0;
     String incomingDataLengthString;
     long bytesLeft;
@@ -353,16 +353,16 @@ bool ESP8266::httpGet() {
                     }
                 }
                 headerBuff[bytesRead - 1] = c;
-            } else {
-                // TODO This is the error step
-
+            } else if (step == 7) {
                 // Store what fits in the cBuff
-                //if (bytesRead < 64) {
-                //    cBuff[bytesRead - 1] = c;
-                //} else {
-                    // Discard what doesn't fit in the cBuff
-                    Serial.print(c);
-                //}
+                cBuff[bytesRead - 1] = c;
+
+                if (bytesRead == ESP8266_CHAR_BUFF_SIZE) {
+                    step++;
+                }
+            } else {
+                Serial.print(c);
+                // TODO This is the error step
             }
         }
     }
