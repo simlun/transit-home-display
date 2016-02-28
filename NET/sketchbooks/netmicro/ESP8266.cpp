@@ -215,6 +215,7 @@ bool ESP8266::httpGet() {
     String incomingDataLengthString;
     long bytesLeft;
     char ipdOrClose[6] = {0};
+    long discarded = 0;
     printFreeMemory();
 
     if (!tcpConnect()) {
@@ -361,8 +362,8 @@ bool ESP8266::httpGet() {
                     step++;
                 }
             } else {
-                Serial.print(c);
-                // TODO This is the error step
+                //Serial.print(c);
+                discarded++;
             }
         }
     }
@@ -374,8 +375,11 @@ bool ESP8266::httpGet() {
     Serial.print(F("Content-Length: "));
     Serial.println(contentLength);
     Serial.println(F("cBuff:"));
+    Serial.println(F("=============="));
     Serial.println(cBuff);
     Serial.println(F("=============="));
+    Serial.print(F("Discarded: "));
+    Serial.println(discarded, DEC);
     printFreeMemory();
 
     if (softser->available() > 0) {
