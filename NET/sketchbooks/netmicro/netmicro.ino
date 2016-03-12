@@ -58,7 +58,7 @@ DoHandler doHandler(&eventBus);
 EEPROMDebugHandler eepromDebugHandler(&eventBus);
 
 AltSoftSerial softser; // Hard-coded pins: TX: 9, RX: 8
-ESP8266 wifiDevice(&softser);
+ESP8266 wifiDevice(&softser, &ssidStorage, &passphraseStorage, &hostStorage);
 WiFi wifi(&statusHandler, &wifiDevice);
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
 

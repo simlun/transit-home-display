@@ -14,6 +14,9 @@
 class ESP8266 : public WiFiDevice {
     private:
         AltSoftSerial * softser;
+        Storage * ssidStorage;
+        Storage * passphraseStorage;
+        Storage * hostStorage;
         bool softReset();
         bool tcpConnect();
         bool sendHttpGetRequest();
@@ -27,7 +30,7 @@ class ESP8266 : public WiFiDevice {
         bool sendAndExpectResponseLine(char *, char *, bool, bool);
         bool sendAndExpectResponseLine(char *, char *, bool, bool, unsigned long);
     public:
-        ESP8266(AltSoftSerial *);
+        ESP8266(AltSoftSerial *, Storage *, Storage *, Storage *);
         bool initialize();
         bool connect();
         bool httpGet();

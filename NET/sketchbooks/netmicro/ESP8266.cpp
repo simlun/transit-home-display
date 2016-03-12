@@ -1,11 +1,17 @@
 #include "ESP8266.h"
 
-#include <EEPROM.h>
 #include "MemoryFree.h"
 
 #include "constants.h"
 
-ESP8266::ESP8266(AltSoftSerial * softser) : softser(softser) {}
+ESP8266::ESP8266(AltSoftSerial * softser,
+                 Storage * ssidStorage,
+                 Storage * passphraseStorage,
+                 Storage * hostStorage) :
+    softser(softser),
+    ssidStorage(ssidStorage),
+    passphraseStorage(passphraseStorage),
+    hostStorage(hostStorage) {}
 
 bool ESP8266::initialize() {
     Serial.println(F("ESP8266 initializing..."));
@@ -81,36 +87,22 @@ bool ESP8266::connect() {
         return false;
     }
 
-    char ssid[32 + 1];
-    memset(ssid, NULL, 32 + 1);
-    for (byte addr = 0; addr < 32; addr++) {
-        ssid[addr] = EEPROM.read(EEPROM_OFFSET_SSID + addr);
-    }
+    // Join WiFi
+    softser->print("AT+CWJAP=\"");
 
-    char pass[32 + 1];
-    memset(pass, NULL, 32 + 1);
-    for (byte addr = 0; addr < 32; addr++) {
-        pass[addr] = EEPROM.read(EEPROM_OFFSET_PASSPHRASE + addr);
-    }
+    Serial.print(F("SSID: "));
+    ssidStorage->printTo(softser);
+    Serial.println();
 
-    char * c1 = "AT+CWJAP=\"";
-    char * c2 = "\",\"";
-    char * c3 = "\"";
-    byte total_length = strlen(c1) + strlen(ssid) + strlen(c2) + strlen(pass) + strlen(c3) + 1;
+    softser->print("\",\"");
 
-    char config[total_length];
-    memset(config, NULL, sizeof(config));
+    Serial.print(F("PASSPHRASE: "));
+    passphraseStorage->printTo(softser);
+    Serial.println();
 
-    strcat(config, c1);
-    strcat(config, ssid);
-    strcat(config, c2);
-    strcat(config, pass);
-    strcat(config, c3);
+    softser->print("\"");
 
-    Serial.print(F("ESP8266 connecting to: "));
-    Serial.println(config);
-
-    if (!sendVoidCommand(config, 30000, 3)) {
+    if (!sendVoidCommand("", 30000, 3)) {
         Serial.println(F("ERROR: Failed to join WiFi"));
         return false;
     }
@@ -124,27 +116,18 @@ bool ESP8266::tcpConnect() {
     printFreeMemory();
     bool result = true;
 
-    char host[64 + 1] = {0};
-    for (byte addr = 0; addr < 64; addr++) {
-        host[addr] = EEPROM.read(EEPROM_OFFSET_HOST + addr);
-    }
+    softser->print("AT+CIPSTART=\"TCP\",\"");
 
-    char * c1 = "AT+CIPSTART=\"TCP\",\"";
-    char * c2 = "\",80";
-    byte total_length = strlen(c1) + strlen(host) + strlen(c2) + 1;
+    Serial.print(F("HOST: "));
+    hostStorage->printTo(softser);
+    Serial.println();
 
-    char cipstart[total_length];
-    memset(cipstart, NULL, sizeof(cipstart));
-
-    strcat(cipstart, c1);
-    strcat(cipstart, host);
-    strcat(cipstart, c2);
+    softser->print("\",80");
 
     printFreeMemory();
-    Serial.println(F("ESP8266 Starting TCP connection:"));
-    Serial.println(cipstart);
+    Serial.println(F("ESP8266 Starting TCP connection"));
 
-    if (!sendAndExpectResponseLine(cipstart, "CONNECT", true, false, 30000)) {
+    if (!sendAndExpectResponseLine("", "CONNECT", true, false, 30000)) {
         Serial.println(F("ERROR: Failed to start TCP connection"));
         result = false;
     } else {
@@ -184,7 +167,33 @@ bool ESP8266::sendHttpGetRequest() {
     softser->flush();
 
     softser->setTimeout(30000);
+
     // TODO Get real path from EEPROM
+    /*
+    char path[64 + 1] = {0};
+    for (byte addr = 0; addr < 64; addr++) {
+        path[addr] = EEPROM.read(EEPROM_OFFSET_PATH + addr);
+    }
+
+    char * c1 = "GET ";
+    char * c2 = " HTTP/1.0\r\n";
+    char * c3 = "Host: ";
+    char * c4 = "\r\n\r\n";
+    byte total_length = strlen(c1) + strlen(ssid) + strlen(c2) + strlen(pass) + strlen(c3) + 1;
+
+    char config[total_length];
+    memset(config, NULL, sizeof(config));
+
+    strcat(config, c1);
+    strcat(config, ssid);
+    strcat(config, c2);
+    strcat(config, pass);
+    strcat(config, c3);
+
+    Serial.print(F("ESP8266 connecting to: "));
+    Serial.println(config);
+    */
+
     softser->print("GET / HTTP/1.0\r\nHost: example.com\r\n\r\n");
 
     // One second delay after printing the request was recommended by the ESP8266 docs:

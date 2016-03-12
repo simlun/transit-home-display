@@ -19,3 +19,16 @@ void Storage::update(byte data[]) {
         }
     }
 }
+
+void Storage::printTo(AltSoftSerial * target) {
+    char c;
+    for (byte addr = 0; addr < size_in_bytes; addr++) {
+        c = EEPROM.read(address + addr);
+        if (c == '\0') {
+            break;
+        } else {
+            target->print(c);
+            Serial.print(c);
+        }
+    }
+}

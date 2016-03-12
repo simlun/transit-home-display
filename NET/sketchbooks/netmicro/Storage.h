@@ -2,6 +2,7 @@
 #define STORAGE_H
 
 #include <Arduino.h>
+#include <AltSoftSerial.h>
 
 class Storage {
     private:
@@ -13,6 +14,8 @@ class Storage {
         // The first element represents the sub address of the memory space in
         // steps of 8 bytes, followed by 8 bytes of data.
         void update(byte[]);
+
+        void printTo(AltSoftSerial *);
 };
 
 #endif
