@@ -6,6 +6,11 @@
 
 #include "WiFi.h"
 
+// Configuration
+#define ESP8266_DEFAULT_COMMAND_TIMEOUT 10000
+#define ESP8266_CHAR_BUFF_SIZE 64
+#define ESP8266_ON_OFF_PIN 10
+
 class ESP8266 : public WiFiDevice {
     private:
         AltSoftSerial * softser;
@@ -27,7 +32,5 @@ class ESP8266 : public WiFiDevice {
         bool connect();
         bool httpGet();
 };
-
-#define ESP8266_CHAR_BUFF_SIZE 64
 
 #endif

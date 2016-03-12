@@ -5,18 +5,55 @@
 
 #include "constants.h"
 
-#define ESP8266_DEFAULT_COMMAND_TIMEOUT 10000
-
 ESP8266::ESP8266(AltSoftSerial * softser) : softser(softser) {}
 
 bool ESP8266::initialize() {
     Serial.println(F("ESP8266 initializing..."));
 
+    // Device is OFF by default
+    pinMode(ESP8266_ON_OFF_PIN, OUTPUT);
+    digitalWrite(ESP8266_ON_OFF_PIN, LOW);
+
     // Soft serial connection to ESP8266
     // AT+UART_DEF=57600,8,1,0,0
     softser->begin(57600);
-    while(!softser);
     softser->setTimeout(ESP8266_DEFAULT_COMMAND_TIMEOUT);
+
+    Serial.println(F("ESP8266 initialized"));
+    return true;
+}
+
+bool ESP8266::softReset() {
+    // Send test command
+    if (!sendVoidCommand("AT")) {
+        Serial.println(F("ERROR: Communication failure during initial test command"));
+        return false;
+    }
+
+    sendAndExpectResponseLine("AT+RST", "ready", false);
+
+    // Send test command
+    if (!sendVoidCommand("AT")) {
+        Serial.println(F("ERROR: Communication failure during test command"));
+        return false;
+    }
+
+    return true;
+}
+
+bool ESP8266::connect() {
+    Serial.print(F("ESP8266 resetting before connecting..."));
+
+    // Hard reset
+    digitalWrite(ESP8266_ON_OFF_PIN, LOW);
+    delay(100);
+    softser->flush();
+    digitalWrite(ESP8266_ON_OFF_PIN, HIGH);
+    while (softser->available() == 0);
+    if (!softser->find("ready\r\n")) {
+        Serial.println(F("ERROR: Could not hard reset"));
+        return false;
+    }
 
     if (!softReset()) {
         Serial.println(F("ERROR: Could not soft reset"));
@@ -44,29 +81,6 @@ bool ESP8266::initialize() {
         return false;
     }
 
-    Serial.println(F("ESP8266 initialized"));
-    return true;
-}
-
-bool ESP8266::softReset() {
-    // Send test command
-    if (!sendVoidCommand("AT")) {
-        Serial.println(F("ERROR: Communication failure during initial test command"));
-        return false;
-    }
-
-    sendAndExpectResponseLine("AT+RST", "ready", false);
-
-    // Send test command
-    if (!sendVoidCommand("AT")) {
-        Serial.println(F("ERROR: Communication failure during test command"));
-        return false;
-    }
-
-    return true;
-}
-
-bool ESP8266::connect() {
     char ssid[32 + 1];
     memset(ssid, NULL, 32 + 1);
     for (byte addr = 0; addr < 32; addr++) {
