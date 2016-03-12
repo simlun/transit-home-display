@@ -48,6 +48,24 @@ bool ESP8266::initialize() {
     return true;
 }
 
+bool ESP8266::softReset() {
+    // Send test command
+    if (!sendVoidCommand("AT")) {
+        Serial.println(F("ERROR: Communication failure during initial test command"));
+        return false;
+    }
+
+    sendAndExpectResponseLine("AT+RST", "ready", false);
+
+    // Send test command
+    if (!sendVoidCommand("AT")) {
+        Serial.println(F("ERROR: Communication failure during test command"));
+        return false;
+    }
+
+    return true;
+}
+
 bool ESP8266::connect() {
     char ssid[32 + 1];
     memset(ssid, NULL, 32 + 1);
@@ -197,6 +215,14 @@ bool ESP8266::sendHttpGetRequest() {
     }
 
     printFreeMemory();
+        bool sendValueUpdate(char *, char *, char *);
+        bool sendVoidCommand(char *);
+        bool sendVoidCommand(char *, unsigned long);
+        bool sendVoidCommand(char *, unsigned long, unsigned int);
+        bool sendAndExpectResponseLine(char *, char *);
+        bool sendAndExpectResponseLine(char *, char *, bool);
+        bool sendAndExpectResponseLine(char *, char *, bool, bool);
+        bool sendAndExpectResponseLine(char *, char *, bool, bool, unsigned long);
     Serial.println(F("sendHttpGetRequest]"));
     Serial.println();
     return true;
@@ -417,24 +443,6 @@ bool ESP8266::httpGet() {
     Serial.println(F("httpGet]"));
     Serial.println(F("return true"));
     Serial.println();
-    return true;
-}
-
-bool ESP8266::softReset() {
-    // Send test command
-    if (!sendVoidCommand("AT")) {
-        Serial.println(F("ERROR: Communication failure during initial test command"));
-        return false;
-    }
-
-    sendAndExpectResponseLine("AT+RST", "ready", false);
-
-    // Send test command
-    if (!sendVoidCommand("AT")) {
-        Serial.println(F("ERROR: Communication failure during test command"));
-        return false;
-    }
-
     return true;
 }
 
