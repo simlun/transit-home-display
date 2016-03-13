@@ -98,7 +98,7 @@ PATH       0x21       W     0xB0     0x06 + [8 ASCII characters]
 PATH       0x21       W     0xB8     0x07 + [last 8 ASCII characters]
 
 DO         0x22       W              {GET}
-RESPONSE   0x23       R              [256 bytes]
+RESPONSE   0x23       R              [128 bytes]
 ```
 
 ```
