@@ -28,6 +28,8 @@
 EventBus eventBus;
 I2C i2c(MY_I2C_ADDRESS);
 
+char responseBuffer[RESPONSE_BUFFER_SIZE] = {0};
+
 
 /**
  * I2C Protocol Handlers
@@ -62,7 +64,7 @@ EEPROMDebugHandler eepromDebugHandler(&eventBus);
 #endif
 
 AltSoftSerial softser; // Hard-coded pins: TX: 9, RX: 8
-ESP8266 wifiDevice(&softser, &ssidStorage, &passphraseStorage, &hostStorage, &pathStorage);
+ESP8266 wifiDevice(&softser, &ssidStorage, &passphraseStorage, &hostStorage, &pathStorage, responseBuffer);
 WiFi wifi(&statusHandler, &wifiDevice);
 WPA2ConnectHandler wpa2ConnectHandler(&eventBus, &wifi);
 

@@ -57,4 +57,11 @@
 #define EEPROM_SIZE_PATH         64
 
 
+/**
+ * Configuration
+ */
+
+#define RESPONSE_BUFFER_SIZE (128+1)
+
+
 #endif

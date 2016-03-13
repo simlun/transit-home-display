@@ -8,7 +8,6 @@
 
 // Configuration
 #define ESP8266_DEFAULT_COMMAND_TIMEOUT 10000
-#define ESP8266_CHAR_BUFF_SIZE 128
 #define ESP8266_ON_OFF_PIN 10
 
 class ESP8266 : public WiFiDevice {
@@ -18,6 +17,7 @@ class ESP8266 : public WiFiDevice {
         Storage * passphraseStorage;
         Storage * hostStorage;
         Storage * pathStorage;
+        char * responseBuffer;
         bool softReset();
         bool tcpConnect();
         bool sendHttpGetRequest();
@@ -31,7 +31,7 @@ class ESP8266 : public WiFiDevice {
         bool sendAndExpectResponseLine(char *, char *, bool, bool);
         bool sendAndExpectResponseLine(char *, char *, bool, bool, unsigned long);
     public:
-        ESP8266(AltSoftSerial *, Storage *, Storage *, Storage *, Storage *);
+        ESP8266(AltSoftSerial *, Storage *, Storage *, Storage *, Storage *, char *);
         bool initialize();
         bool connect();
         bool httpGet();

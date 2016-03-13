@@ -9,12 +9,14 @@ ESP8266::ESP8266(AltSoftSerial * softser,
                  Storage * ssidStorage,
                  Storage * passphraseStorage,
                  Storage * hostStorage,
-                 Storage * pathStorage) :
+                 Storage * pathStorage,
+                 char * responseBuffer) :
     softser(softser),
     ssidStorage(ssidStorage),
     passphraseStorage(passphraseStorage),
     hostStorage(hostStorage),
-    pathStorage(pathStorage) {}
+    pathStorage(pathStorage),
+    responseBuffer(responseBuffer) {}
 
 bool ESP8266::initialize() {
     DEBUG Serial.println(F("ESP8266 initializing..."));
@@ -252,7 +254,6 @@ bool ESP8266::httpGet() {
     bool badHttpStatusCode = true;
     char headerBuff[32 + 1] = {0};
     char contentLength[32 + 1] = {0};
-    char cBuff[ESP8266_CHAR_BUFF_SIZE + 1] = {0};
     int bytesRead = 0;
     String incomingDataLengthString;
     long bytesLeft;
@@ -398,10 +399,14 @@ bool ESP8266::httpGet() {
                 headerBuff[bytesRead - 1] = c;
             } else if (step == 7) {
                 //Serial.print(c);
-                // Store what fits in the cBuff
-                cBuff[bytesRead - 1] = c;
 
-                if (bytesRead == ESP8266_CHAR_BUFF_SIZE) {
+                // Store what fits in the responseBuffer
+                responseBuffer[bytesRead - 1] = c;
+
+                // End C string with a null character
+                responseBuffer[bytesRead] = '\0';
+
+                if (bytesRead == RESPONSE_BUFFER_SIZE) {
                     step++;
                 }
             } else {
@@ -417,9 +422,9 @@ bool ESP8266::httpGet() {
     DEBUG Serial.println(statusCodeBuff);
     DEBUG Serial.print(F("Content-Length: "));
     DEBUG Serial.println(contentLength);
-    DEBUG Serial.println(F("cBuff:"));
+    DEBUG Serial.println(F("responseBuffer:"));
     DEBUG Serial.println(F("=============="));
-    DEBUG Serial.println(cBuff);
+    DEBUG Serial.println(responseBuffer);
     DEBUG Serial.println(F("=============="));
     DEBUG Serial.print(F("Discarded: "));
     DEBUG Serial.println(discarded, DEC);
