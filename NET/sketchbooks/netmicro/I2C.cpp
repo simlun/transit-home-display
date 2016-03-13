@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "I2C.h"
 #include "constants.h"
 
@@ -10,17 +11,17 @@
 I2C::I2C(byte address) : address(address) {}
 
 void I2C::initialize() {
-    Serial.println(F("Initializing I2C device"));
+    DEBUG Serial.println(F("Initializing I2C device"));
     Wire.begin(address);
 }
 
 void I2C::registerReceiveEventHandler(ReceiveEventHandler * handler) {
-    Serial.println(F("Registering I2C receive event handler"));
+    DEBUG Serial.println(F("Registering I2C receive event handler"));
     receiveEventHandlers[handler->command()] = handler;
 }
 
 void I2C::registerRequestEventHandler(RequestEventHandler * handler) {
-    Serial.println(F("Registering I2C request event handler"));
+    DEBUG Serial.println(F("Registering I2C request event handler"));
     requestEventHandlers[handler->command()] = handler;
 }
 
@@ -55,8 +56,8 @@ void I2C::handleReceiveCommand() {
         }
     } else {
         readAndThrowAwayRest();
-        Serial.print(F("Unknown command: 0x"));
-        Serial.println(command, HEX);
+        DEBUG Serial.print(F("Unknown command: 0x"));
+        DEBUG Serial.println(command, HEX);
     }
 }
 

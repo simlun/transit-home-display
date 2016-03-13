@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "Storage.h"
 #include <EEPROM.h>
 
@@ -28,7 +29,7 @@ void Storage::printTo(AltSoftSerial * target) {
             break;
         } else {
             target->print(c);
-            Serial.print(c);
+            DEBUG Serial.print(c);
         }
     }
 }

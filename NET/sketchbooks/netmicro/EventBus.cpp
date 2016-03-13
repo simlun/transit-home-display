@@ -1,9 +1,10 @@
+#include "debug.h"
 #include "EventBus.h"
 
 EventHandler::EventHandler(EventBus * eventBus) : eventBus(eventBus) {}
 
 void EventBus::registerHandler(EventHandler * handler) {
-    Serial.println(F("Registering event bus event handler"));
+    DEBUG Serial.println(F("Registering event bus event handler"));
     eventHandlers[handler->event()] = handler;
 }
 
@@ -13,11 +14,11 @@ void EventBus::post(Event event) {
 
 void EventBus::process() {
     if (!eventQueue.empty()) {
-        Serial.println(F("Found an event on the queue"));
+        DEBUG Serial.println(F("Found an event on the queue"));
         Event event = eventQueue.front();
         eventQueue.pop();
         if (eventHandlers.count(event) == 1) {
-            Serial.println(F("Calling event handler"));
+            DEBUG Serial.println(F("Calling event handler"));
             EventHandler * handler = eventHandlers[event];
             handler->handle();
         }

@@ -1,3 +1,5 @@
+#include "debug.h"
+
 #include <AltSoftSerial.h>
 #include <Wire.h>
 #include <EEPROM.h>
@@ -55,7 +57,9 @@ DoHandler doHandler(&eventBus);
  * Event Bus Handlers
  */
 
+#if DEBUG_BLOCK
 EEPROMDebugHandler eepromDebugHandler(&eventBus);
+#endif
 
 AltSoftSerial softser; // Hard-coded pins: TX: 9, RX: 8
 ESP8266 wifiDevice(&softser, &ssidStorage, &passphraseStorage, &hostStorage, &pathStorage);
@@ -70,7 +74,9 @@ HTTPGetHandler httpGetHandler(&eventBus, &wifi);
  */
 
 void registerEventBusHandlers() {
+    #if DEBUG_BLOCK
     eventBus.registerHandler(&eepromDebugHandler);
+    #endif
     eventBus.registerHandler(&wpa2ConnectHandler);
     eventBus.registerHandler(&httpGetHandler);
 }

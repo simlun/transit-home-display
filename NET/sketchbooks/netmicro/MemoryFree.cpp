@@ -1,3 +1,4 @@
+#include "debug.h"
 #include <Arduino.h>
 
 extern unsigned int __heap_start;
@@ -40,7 +41,7 @@ int freeMemory() {
 }
 
 void printFreeMemory() {
-    Serial.print(F("freeMemory() = "));
-    Serial.print(freeMemory(), DEC);
-    Serial.println(F(" bytes"));
+    DEBUG Serial.print(F("freeMemory() = "));
+    DEBUG Serial.print(freeMemory(), DEC);
+    DEBUG Serial.println(F(" bytes"));
 }
