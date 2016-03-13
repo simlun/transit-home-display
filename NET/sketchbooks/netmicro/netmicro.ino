@@ -34,18 +34,18 @@ I2C i2c(MY_I2C_ADDRESS);
 PingHandler pingHandler(&eventBus);
 StatusHandler statusHandler(&eventBus);
 
-Storage ssidStorage(EEPROM_OFFSET_SSID, 32);
+Storage ssidStorage(EEPROM_OFFSET_SSID, EEPROM_SIZE_SSID);
 SSIDHandler ssidHandler(&eventBus, &ssidStorage);
 
-Storage passphraseStorage(EEPROM_OFFSET_PASSPHRASE, 32);
+Storage passphraseStorage(EEPROM_OFFSET_PASSPHRASE, EEPROM_SIZE_PASSPHRASE);
 PassphraseHandler passphraseHandler(&eventBus, &passphraseStorage);
 
 ConnectHandler connectHandler(&eventBus);
 
-Storage hostStorage(EEPROM_OFFSET_HOST, 64);
+Storage hostStorage(EEPROM_OFFSET_HOST, EEPROM_SIZE_HOST);
 HostHandler hostHandler(&eventBus, &hostStorage);
 
-Storage pathStorage(EEPROM_OFFSET_PATH, 64);
+Storage pathStorage(EEPROM_OFFSET_PATH, EEPROM_SIZE_PATH);
 PathHandler pathHandler(&eventBus, &pathStorage);
 
 DoHandler doHandler(&eventBus);

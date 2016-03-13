@@ -48,9 +48,13 @@
  */
 
 #define EEPROM_OFFSET_SSID       0x00
+#define EEPROM_SIZE_SSID         32
 #define EEPROM_OFFSET_PASSPHRASE 0x20
+#define EEPROM_SIZE_PASSPHRASE   32
 #define EEPROM_OFFSET_HOST       0x40
+#define EEPROM_SIZE_HOST         64
 #define EEPROM_OFFSET_PATH       0x80
+#define EEPROM_SIZE_PATH         64
 
 
 #endif
