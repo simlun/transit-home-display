@@ -7,11 +7,13 @@
 ESP8266::ESP8266(AltSoftSerial * softser,
                  Storage * ssidStorage,
                  Storage * passphraseStorage,
-                 Storage * hostStorage) :
+                 Storage * hostStorage,
+                 Storage * pathStorage) :
     softser(softser),
     ssidStorage(ssidStorage),
     passphraseStorage(passphraseStorage),
-    hostStorage(hostStorage) {}
+    hostStorage(hostStorage),
+    pathStorage(pathStorage) {}
 
 bool ESP8266::initialize() {
     Serial.println(F("ESP8266 initializing..."));
@@ -146,9 +148,15 @@ bool ESP8266::sendHttpGetRequest() {
     Serial.println(F("[sendHttpGetRequest()"));
     printFreeMemory();
 
-    // TODO Dynamic CIPSEND value
-    char * cipsend = "AT+CIPSEND=37";
+    long pathLength = pathStorage->length();
+    long hostLength = hostStorage->length();
+
+    // See below to understand where 4, 17 and 4 comes from
+    String cipsendLength = String(4 + pathLength + 17 + hostLength + 4);
+
+    char * cipsend = "AT+CIPSEND=";
     softser->print(cipsend);
+    softser->print(cipsendLength.c_str());
     softser->print("\r\n");
 
     // Expect the CIPSEND prompt
@@ -165,44 +173,28 @@ bool ESP8266::sendHttpGetRequest() {
         Serial.println(F("Buffer overflow!"));
     }
     softser->flush();
-
     softser->setTimeout(30000);
 
-    // TODO Get real path from EEPROM
-    /*
-    char path[64 + 1] = {0};
-    for (byte addr = 0; addr < 64; addr++) {
-        path[addr] = EEPROM.read(EEPROM_OFFSET_PATH + addr);
-    }
+    softser->print("GET "); // 4
 
-    char * c1 = "GET ";
-    char * c2 = " HTTP/1.0\r\n";
-    char * c3 = "Host: ";
-    char * c4 = "\r\n\r\n";
-    byte total_length = strlen(c1) + strlen(ssid) + strlen(c2) + strlen(pass) + strlen(c3) + 1;
+    Serial.print(F("PATH: "));
+    pathStorage->printTo(softser);
+    Serial.println();
 
-    char config[total_length];
-    memset(config, NULL, sizeof(config));
+    softser->print(" HTTP/1.0\r\nHost: "); // 17
 
-    strcat(config, c1);
-    strcat(config, ssid);
-    strcat(config, c2);
-    strcat(config, pass);
-    strcat(config, c3);
+    Serial.print(F("HOST: "));
+    hostStorage->printTo(softser);
+    Serial.println();
 
-    Serial.print(F("ESP8266 connecting to: "));
-    Serial.println(config);
-    */
-
-    softser->print("GET / HTTP/1.0\r\nHost: example.com\r\n\r\n");
-
-    // One second delay after printing the request was recommended by the ESP8266 docs:
-    //delay(1000);
+    softser->print("\r\n\r\n"); // 4
 
     // Recv 37 bytes
     //
     // SEND OK
     //
+
+    Serial.println(F("Sent CIPSEND, parsing response..."));
 
     while (softser->available() == 0);
     if (!softser->find("Recv ")) {
@@ -211,41 +203,41 @@ bool ESP8266::sendHttpGetRequest() {
         Serial.println();
         return false;
     }
-    //String recvBytes = softser->readStringUntil(' ');
-    //long recvBytes_long = recvBytes.toInt();
-    // TODO: Verify recvBytes_long
-    while (softser->available() == 0);
-    if (!softser->find("37")) {
-        Serial.println(F("ERROR: Could not find length of CIPSEND response"));
-        Serial.println(F("sendHttpGetRequest]"));
+    Serial.println(F("Got 'Recv '"));
+    String recvBytes = softser->readStringUntil(' ');
+    long recvBytes_long = recvBytes.toInt();
+    if (recvBytes_long != cipsendLength.toInt()) {
+        Serial.println(F("ERROR: Could not send CIPSEND message"));
+        Serial.print(F("Expected ESP8266 to have received: "));
+        Serial.print(cipsendLength.toInt());
+        Serial.println();
+        Serial.print(F("But it received: "));
+        Serial.print(recvBytes_long);
         Serial.println();
         return false;
     }
 
+    Serial.println(F("Got number of bytes"));
     while (softser->available() == 0);
-    if (!softser->find(" bytes\r\n\r\n")) {
+    if (!softser->find("bytes")) {
         Serial.println(F("ERROR: Could not find end of CIPSEND response"));
         Serial.println(F("sendHttpGetRequest]"));
         Serial.println();
         return false;
     }
+    Serial.println(F("Got 'bytes'"));
+
     while (softser->available() == 0);
-    if (!softser->find("SEND OK\r\n\r\n")) {
+    if (!softser->find("SEND OK")) {
         Serial.println(F("ERROR: Could not find SEND OK"));
         Serial.println(F("sendHttpGetRequest]"));
         Serial.println();
         return false;
     }
 
+    softser->flush();
+
     printFreeMemory();
-        bool sendValueUpdate(char *, char *, char *);
-        bool sendVoidCommand(char *);
-        bool sendVoidCommand(char *, unsigned long);
-        bool sendVoidCommand(char *, unsigned long, unsigned int);
-        bool sendAndExpectResponseLine(char *, char *);
-        bool sendAndExpectResponseLine(char *, char *, bool);
-        bool sendAndExpectResponseLine(char *, char *, bool, bool);
-        bool sendAndExpectResponseLine(char *, char *, bool, bool, unsigned long);
     Serial.println(F("sendHttpGetRequest]"));
     Serial.println();
     return true;
@@ -628,8 +620,16 @@ bool ESP8266::sendAndExpectResponseLine(char * command, char * expectedResponse,
                 result = false;
                 break;
             } else {
-                Serial.print(F("Discarding: "));
-                Serial.println(response);
+                if (response.equals("ERROR")) {
+                    Serial.println(F("Unexpected 'ERROR' response"));
+                    return false;
+                } else if (response.equals("DNS Fail")) {
+                    Serial.println(F("Unexpected 'DNS Fail' response"));
+                    return false;
+                } else {
+                    Serial.print(F("Discarding: "));
+                    Serial.println(response);
+                }
             }
         }
         if (softser->overflow()) {

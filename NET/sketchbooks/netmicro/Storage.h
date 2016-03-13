@@ -16,6 +16,8 @@ class Storage {
         void update(byte[]);
 
         void printTo(AltSoftSerial *);
+
+        long length();
 };
 
 #endif

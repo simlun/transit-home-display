@@ -32,3 +32,17 @@ void Storage::printTo(AltSoftSerial * target) {
         }
     }
 }
+
+long Storage::length() {
+    long l = 0;
+    char c;
+    for (byte addr = 0; addr < size_in_bytes; addr++) {
+        c = EEPROM.read(address + addr);
+        if (c == '\0') {
+            break;
+        } else {
+            l++;
+        }
+    }
+    return l;
+}
