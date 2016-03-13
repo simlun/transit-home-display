@@ -54,6 +54,8 @@ PathHandler pathHandler(&eventBus, &pathStorage);
 
 DoHandler doHandler(&eventBus);
 
+ResponseHandler responseHandler(&eventBus, responseBuffer);
+
 
 /**
  * Event Bus Handlers
@@ -92,6 +94,7 @@ void registerProtocolHandlers() {
     i2c.registerReceiveEventHandler(&hostHandler);
     i2c.registerReceiveEventHandler(&pathHandler);
     i2c.registerReceiveEventHandler(&doHandler);
+    i2c.registerRequestEventHandler(&responseHandler);
 }
 
 

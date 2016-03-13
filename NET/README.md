@@ -45,7 +45,8 @@ Usage
 7. Write `GET` to the `DO` registry to initiate a HTTP GET. (TODO: support
    `PUT`, `POST` and `DELETE`).
 8. `STATUS` should proceed to `BUSY` and then `ONLINE`.
-9. Read up to 256 bytes from `RESPONSE` to get the HTTP response.
+9. Read up to 128 bytes from `RESPONSE` to get the HTTP response. One call per
+   byte, a 0x00 byte response symbolizes the end of the response.
 
 TODO: Write `DISCONNECT` to the `CONNECT` address to disconnect.
 

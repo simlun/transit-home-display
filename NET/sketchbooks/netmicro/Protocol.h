@@ -81,4 +81,14 @@ class DoHandler : public ReceiveEventHandler {
         void handleByte(byte);
 };
 
+class ResponseHandler : public RequestEventHandler {
+    private:
+        char * responseBuffer;
+        int responseBufferIndex;
+    public:
+        ResponseHandler(EventBus *, char *);
+        byte command();
+        byte requestedByte();
+};
+
 #endif

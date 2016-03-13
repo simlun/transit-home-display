@@ -177,3 +177,27 @@ void DoHandler::handleByte(byte b) {
         eventBus->post(GET);
     }
 }
+
+
+/**
+ * Response
+ */
+
+ResponseHandler::ResponseHandler(EventBus * eventBus, char * responseBuffer) :
+    RequestEventHandler(eventBus),
+    responseBuffer(responseBuffer),
+    responseBufferIndex(0) {}
+
+byte ResponseHandler::command() {
+    return RESPONSE;
+}
+
+byte ResponseHandler::requestedByte() {
+    char c = responseBuffer[responseBufferIndex];
+    if (c != '\0') {
+        responseBufferIndex++;
+    } else {
+        responseBufferIndex = 0;
+    }
+    return (byte) c;
+}
