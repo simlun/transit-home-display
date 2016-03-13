@@ -6,6 +6,7 @@ Bill Of Materials
 
 * Arduino
 * ESP8266 WiFi Module
+* N-channel MOSFET
 
 
 I2C Protocol
@@ -29,7 +30,7 @@ http://www.embedded.com/design/connectivity/4025661/Inter-IC-I2C-bus-design-and-
 Usage
 -----
 
-(Current development status: 1-6 are implemented)
+(Current development status: 1-8 are implemented)
 
 1. Read from the `PING` registry and get a `PONG` response to see that the
    device is fundamentally working.
@@ -45,9 +46,6 @@ Usage
    `PUT`, `POST` and `DELETE`).
 8. `STATUS` should proceed to `BUSY` and then `ONLINE`.
 9. Read up to 256 bytes from `RESPONSE` to get the HTTP response.
-
-TODO: The `SSID`, `PASSPHRASE`, `HOST` and `PATH` will be stored in EEPROM
-(where memory is kept after reset and power loss).
 
 TODO: Write `DISCONNECT` to the `CONNECT` address to disconnect.
 
