@@ -1,11 +1,22 @@
 #include <Wire.h> 
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_SI2C.h>
 
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+#define MOTION_DETECTION_PIN 2
+#define MOTION_DETECTION_GRACE_PERIOD_MS 30000
+volatile boolean motionDetected = false;
+unsigned long msSinceLastMotionDetected = 0;
+
+boolean backlightOn = false;
+
+// Software I2C for the LCD
+// SCL: Arduino pin 8
+// SDA: Arduino pin 9
+LiquidCrystal_SI2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
 void setup() {
   lcd.begin(20, 4);
-  lcd.backlight();
+  
+  lcd.noBacklight();
 
   lcd.home();
   lcd.print("12345678901234567890");  
@@ -16,14 +27,29 @@ void setup() {
   lcd.setCursor(0, 3);
   lcd.print("12345678901234567890");
   
-  delay(2500);
-  lcd.noBacklight();
+  attachInterrupt(digitalPinToInterrupt(MOTION_DETECTION_PIN), interruptServiceRoutine, RISING);
 }
 
-void loop() {}
+void interruptServiceRoutine() {
+  motionDetected = true;
+}
+
+void loop() {
+  if (motionDetected) {
+    motionDetected = false;
+    msSinceLastMotionDetected = millis();
+    lcd.backlight();
+    backlightOn = true;
+  }
+  
+  if (backlightOn && millis() - msSinceLastMotionDetected > MOTION_DETECTION_GRACE_PERIOD_MS) {
+    lcd.noBacklight();
+    backlightOn = false;
+  }
+}
 
 // TODO
 // [x] Hello world
-// [ ] Enable backlight with motion detector
-// [ ] Make this an I2C slave
+// [x] Enable backlight with motion detector
+// [ ] Make this a hardware I2C slave
 // [ ] Design I2C protocol
